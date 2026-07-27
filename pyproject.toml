@@ -1,0 +1,55 @@
+[build-system]
+requires = ["hatchling>=1.25"]
+build-backend = "hatchling.build"
+
+[project]
+name = "couchbase-lm-cache"
+version = "0.1.0"
+description = "Couchbase remote storage connector plugin for LMCache KV-cache chunks"
+readme = "README.md"
+requires-python = ">=3.10"
+license = "Apache-2.0"
+authors = [{ name = "Couchbase Examples" }]
+keywords = ["couchbase", "lmcache", "vllm", "kv-cache", "llm"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: Apache Software License",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+]
+dependencies = [
+  "couchbase>=4.3.6,<5",
+]
+
+[project.optional-dependencies]
+lmcache = ["lmcache>=0.4"]
+dev = [
+  "pytest>=8.0",
+  "pytest-cov>=5.0",
+  "ruff>=0.5.0",
+  "build>=1.2.1",
+]
+
+[project.urls]
+Repository = "https://github.com/couchbase-examples/couchbase-lm-cache"
+Issues = "https://github.com/couchbase-examples/couchbase-lm-cache/issues"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/couchbase_lm_cache"]
+
+[tool.ruff]
+line-length = 88
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "SIM"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra"
+markers = [
+  "live: requires a reachable Couchbase Server or Capella cluster",
+]

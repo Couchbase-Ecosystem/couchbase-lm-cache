@@ -1,0 +1,30 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+coverage.xml
+htmlcov/
+.dist/
+dist/
+build/
+site/
+.venv/
+venv/
+
+# Local configuration and secrets
+.env
+.env.*
+!.env.example
+lmcache-couchbase.yaml
+*.pem
+*.key
+*.crt
+
+# Test/runtime output
+/tmp/
+.cache/
+.DS_Store
