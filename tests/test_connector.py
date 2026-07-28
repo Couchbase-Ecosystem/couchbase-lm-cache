@@ -3,7 +3,16 @@
 import asyncio
 from types import SimpleNamespace
 
-from couchbase_lm_cache.connector import CouchbaseConnector
+from couchbase_lm_cache.connector import _HAS_LMCACHE, CouchbaseConnector
+
+if _HAS_LMCACHE:
+    import torch
+    from lmcache.v1.config import LMCacheEngineConfig
+    from lmcache.v1.metadata import LMCacheMetadata
+else:
+    torch = None
+    LMCacheEngineConfig = None
+    LMCacheMetadata = None
 
 
 class _MemoryObj:
@@ -13,8 +22,25 @@ class _MemoryObj:
 
 
 class _LocalCPUBackend:
-    config = SimpleNamespace(extra_config={})
-    metadata = object()
+    def __init__(self):
+        if _HAS_LMCACHE:
+            assert LMCacheEngineConfig is not None
+            assert LMCacheMetadata is not None
+            assert torch is not None
+            self.config = LMCacheEngineConfig(extra_config={})
+            self.metadata = LMCacheMetadata(
+                model_name="unit-test",
+                world_size=1,
+                local_world_size=1,
+                worker_id=0,
+                local_worker_id=0,
+                kv_dtype=torch.float16,
+                kv_shape=(1, 2, 1, 1, 4),
+                chunk_size=1,
+            )
+        else:
+            self.config = SimpleNamespace(extra_config={})
+            self.metadata = object()
 
     def allocate(self, shapes, dtypes, fmt):
         del shapes, dtypes, fmt
