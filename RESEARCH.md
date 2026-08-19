@@ -1,6 +1,6 @@
 # Repository Orientation
 
-- Target repo: `couchbase-examples/couchbase-lm-cache` (empty repo at intake; WRITE permission confirmed through GitHub API).
+- Target repo: `Couchbase-Ecosystem/couchbase-lm-cache` (empty repo at intake; WRITE permission confirmed through GitHub API).
 - Upstream evaluated: `LMCache/LMCache` dev branch, local clone inspected during this task.
 - Integration type: LMCache remote storage connector plugin for serialized LLM KV-cache chunks.
 - Existing integration patterns: LMCache has `RemoteBackend` plus `remote_storage_plugins`, `ConnectorAdapter`/`RemoteConnector` dynamic loading, and built-in Redis/RESP, S3, filesystem, Bigtable, Azure, HF3FS, InfiniStore, MooncakeStore, audit, blackhole, mock, and LM server connectors.
@@ -75,7 +75,7 @@ Evidence:
 - Couchbase Server and Python SDK support KV binary documents, scopes/collections, document expiry, and username/password/TLS connections.
 
 Implementation path:
-- Standalone Couchbase-owned Python package in `couchbase-examples/couchbase-lm-cache`.
+- Standalone Couchbase-owned Python package in `Couchbase-Ecosystem/couchbase-lm-cache`.
 - Provide an LMCache remote connector plugin, low-level Couchbase byte store, unit tests, live test gate, quickstart, developer docs, and tutorial/example.
 
 Questions:

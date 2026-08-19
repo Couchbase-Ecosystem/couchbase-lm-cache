@@ -61,7 +61,7 @@ pip install couchbase-lm-cache
 For source checkout testing:
 
 ```bash
-git clone https://github.com/couchbase-examples/couchbase-lm-cache.git
+git clone https://github.com/Couchbase-Ecosystem/couchbase-lm-cache.git
 cd couchbase-lm-cache
 pip install -e .
 ```
