@@ -34,8 +34,8 @@ dev = [
 ]
 
 [project.urls]
-Repository = "https://github.com/couchbase-examples/couchbase-lm-cache"
-Issues = "https://github.com/couchbase-examples/couchbase-lm-cache/issues"
+Repository = "https://github.com/Couchbase-Ecosystem/couchbase-lm-cache"
+Issues = "https://github.com/Couchbase-Ecosystem/couchbase-lm-cache/issues"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/couchbase_lm_cache"]
