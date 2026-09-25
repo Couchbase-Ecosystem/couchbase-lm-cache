@@ -1,0 +1,14 @@
+# LMCache config that adds Couchbase as a remote storage plugin.
+# Point LMCache at it with: export LMCACHE_CONFIG_FILE=$PWD/examples/lmcache-couchbase.yaml
+# Credentials are read from LMCACHE_COUCHBASE_* environment variables by the
+# connector, so no secrets need to be stored in this file.
+chunk_size: 256
+local_cpu: true
+max_local_cpu_size: 5
+remote_serde: naive
+remote_storage_plugins:
+  - couchbase
+extra_config:
+  remote_storage_plugin.couchbase.module_path: couchbase_lm_cache.connector
+  remote_storage_plugin.couchbase.class_name: CouchbaseConnector
+  remote_storage_plugin.couchbase.ttl_seconds: 3600

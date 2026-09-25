@@ -19,9 +19,10 @@ classifiers = [
   "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
 ]
 dependencies = [
-  "couchbase>=4.3.6,<5",
+  "couchbase>=4.6.3,<5",
 ]
 
 [project.optional-dependencies]

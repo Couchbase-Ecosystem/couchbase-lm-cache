@@ -20,6 +20,11 @@ ruff check .
 python -m build
 ```
 
+CI (`.github/workflows/ci.yml`) runs these commands on every pull request
+across Python 3.10-3.14, plus `ruff format --check .` and a live job that starts
+Couchbase Server in Docker and runs `pytest -m live` and
+`python examples/store_smoke.py`.
+
 To test with LMCache, install LMCache in the same environment following LMCache's
 own instructions. LMCache source builds generally need Python 3.12 and either
 `NO_NATIVE_EXT=1` or the appropriate CUDA/HIP/native toolchain.

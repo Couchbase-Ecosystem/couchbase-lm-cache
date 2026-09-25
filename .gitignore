@@ -19,7 +19,7 @@ venv/
 .env
 .env.*
 !.env.example
-lmcache-couchbase.yaml
+/lmcache-couchbase.yaml
 *.pem
 *.key
 *.crt

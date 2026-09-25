@@ -151,8 +151,9 @@ Couchbase LMCache store smoke test passed
    python examples/store_smoke.py
    ```
 
-7. Configure LMCache with `examples/lmcache-couchbase.yaml` and start your
-   LMCache-enabled vLLM server.
+7. Configure LMCache with `examples/lmcache-couchbase.yaml` (it reads
+   Couchbase credentials from the `LMCACHE_COUCHBASE_*` variables) and start
+   your LMCache-enabled vLLM server.
 
 ## Troubleshooting
 
