@@ -1,13 +1,23 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import asyncio
+import ctypes
 import os
 from types import SimpleNamespace
 
 import pytest
 
 from couchbase_lm_cache import CouchbaseKVStore, CouchbaseLMCacheConfig
-from couchbase_lm_cache.connector import CouchbaseConnector
+from couchbase_lm_cache.connector import _HAS_LMCACHE, CouchbaseConnector
+
+if _HAS_LMCACHE:
+    import torch
+    from lmcache.v1.config import LMCacheEngineConfig
+    from lmcache.v1.metadata import LMCacheMetadata
+else:
+    torch = None
+    LMCacheEngineConfig = None
+    LMCacheMetadata = None
 
 
 class _Key:
@@ -18,21 +28,44 @@ class _Key:
         return self.value
 
 
+# One full chunk for the LMCache metadata below: kv_shape (1, 2, 1, 1, 4) in
+# float16 is 16 bytes, and real LMCache rejects reads larger than a chunk.
+_CHUNK_BYTES = 16
+
+
 class _MemoryObj:
-    def __init__(self, payload=b"", size=64):
-        self.buffer = bytearray(size)
+    # LMCache exposes byte_array as a memoryview over a ctypes c_ubyte array.
+    def __init__(self, payload=b"", size=_CHUNK_BYTES):
+        self.buffer = (ctypes.c_ubyte * size)()
         self.byte_array = memoryview(self.buffer)
         if payload:
-            self.byte_array[: len(payload)] = payload
+            self.byte_array.cast("B")[: len(payload)] = payload
 
 
 class _LocalCPUBackend:
-    config = SimpleNamespace(extra_config={})
-    metadata = object()
+    def __init__(self):
+        if _HAS_LMCACHE:
+            assert LMCacheEngineConfig is not None
+            assert LMCacheMetadata is not None
+            assert torch is not None
+            self.config = LMCacheEngineConfig(extra_config={})
+            self.metadata = LMCacheMetadata(
+                model_name="live-test",
+                world_size=1,
+                local_world_size=1,
+                worker_id=0,
+                local_worker_id=0,
+                kv_dtype=torch.float16,
+                kv_shape=(1, 2, 1, 1, 4),
+                chunk_size=1,
+            )
+        else:
+            self.config = SimpleNamespace(extra_config={})
+            self.metadata = object()
 
     def allocate(self, shapes, dtypes, fmt):
         del shapes, dtypes, fmt
-        return _MemoryObj(size=64)
+        return _MemoryObj()
 
 
 def _skip_unless_live_enabled():
@@ -80,7 +113,7 @@ async def _exercise_live_connector():
     connector.meta_fmt = None
     key = _Key("pytest-live-connector")
     missing = _Key("pytest-live-connector-missing")
-    payload = b"connector-live-roundtrip"
+    payload = b"live-connector16"
     try:
         assert not await connector.exists(missing)
         await connector.put(key, _MemoryObj(payload=payload))

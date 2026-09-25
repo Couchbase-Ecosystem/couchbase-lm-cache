@@ -82,7 +82,8 @@ Capella database access user.
 
 ### 4. Add the LMCache config snippet
 
-Create `lmcache-couchbase.yaml`:
+Create `lmcache-couchbase.yaml` (a copy lives at
+[`examples/lmcache-couchbase.yaml`](examples/lmcache-couchbase.yaml)):
 
 ```yaml
 chunk_size: 256
@@ -94,15 +95,15 @@ remote_storage_plugins:
 extra_config:
   remote_storage_plugin.couchbase.module_path: couchbase_lm_cache.connector
   remote_storage_plugin.couchbase.class_name: CouchbaseConnector
-  remote_storage_plugin.couchbase.connection_string: ${LMCACHE_COUCHBASE_CONNSTR}
-  remote_storage_plugin.couchbase.username: ${LMCACHE_COUCHBASE_USERNAME}
-  remote_storage_plugin.couchbase.password: ${LMCACHE_COUCHBASE_PASSWORD}
-  remote_storage_plugin.couchbase.bucket_name: ${LMCACHE_COUCHBASE_BUCKET}
-  remote_storage_plugin.couchbase.scope_name: ${LMCACHE_COUCHBASE_SCOPE:-_default}
-  remote_storage_plugin.couchbase.collection_name: ${LMCACHE_COUCHBASE_COLLECTION:-_default}
-  remote_storage_plugin.couchbase.key_prefix: ${LMCACHE_COUCHBASE_KEY_PREFIX:-lmcache:}
   remote_storage_plugin.couchbase.ttl_seconds: 3600
 ```
+
+LMCache does not expand `${VAR}` placeholders in YAML, so leave connection
+settings out of the file and let the connector read the `LMCACHE_COUCHBASE_*`
+variables from step 3. Any setting can instead be written literally as
+`remote_storage_plugin.couchbase.<field>`, for example `bucket_name`,
+`scope_name`, `collection_name`, or `key_prefix`; literal values take
+precedence over environment variables.
 
 Then point LMCache at it:
 

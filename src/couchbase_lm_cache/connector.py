@@ -31,6 +31,18 @@ except Exception:  # pragma: no cover - unit tests run without heavy LMCache dep
     _HAS_LMCACHE = False
 
 
+def _byte_view(buffer: Any) -> memoryview:
+    """Return a writable unsigned-byte view over a ``MemoryObj.byte_array``.
+
+    LMCache builds ``byte_array`` from a ctypes ``c_ubyte`` array, whose
+    memoryview format is ``<B``. Python cannot slice-assign ``bytes`` into that
+    format, so cast to native ``B`` first.
+    """
+
+    view = buffer if isinstance(buffer, memoryview) else memoryview(buffer)
+    return view if view.format == "B" else view.cast("B")
+
+
 class CouchbaseConnector(RemoteConnector):
     """LMCache remote storage connector that stores chunks in Couchbase KV.
 
@@ -99,8 +111,7 @@ class CouchbaseConnector(RemoteConnector):
         )
         if memory_obj is None:
             raise RuntimeError("LMCache local CPU backend could not allocate MemoryObj")
-        target = memory_obj.byte_array
-        target_view = target if isinstance(target, memoryview) else memoryview(target)
+        target_view = _byte_view(memory_obj.byte_array)
         if len(payload) > len(target_view):
             raise ValueError(
                 f"Couchbase payload for {key} has {len(payload)} bytes but "
@@ -112,11 +123,8 @@ class CouchbaseConnector(RemoteConnector):
     async def put(self, key: CacheEngineKey, memory_obj: MemoryObj) -> None:
         """Persist a chunk in Couchbase."""
 
-        payload = memory_obj.byte_array
-        payload_view = (
-            payload if isinstance(payload, memoryview) else memoryview(payload)
-        )
-        await self._run_blocking(self.store.put_bytes, key, bytes(payload_view))
+        payload = bytes(_byte_view(memory_obj.byte_array))
+        await self._run_blocking(self.store.put_bytes, key, payload)
 
     async def list(self) -> builtins.list[str]:
         """List is intentionally unsupported for the remote connector contract."""
@@ -139,13 +147,7 @@ class CouchbaseConnector(RemoteConnector):
     ) -> None:
         """Persist multiple chunks concurrently."""
 
-        payloads = []
-        for memory_obj in memory_objs:
-            payload = memory_obj.byte_array
-            payload_view = (
-                payload if isinstance(payload, memoryview) else memoryview(payload)
-            )
-            payloads.append(bytes(payload_view))
+        payloads = [bytes(_byte_view(obj.byte_array)) for obj in memory_objs]
         await asyncio.gather(
             *(
                 self._run_blocking(self.store.put_bytes, key, payload)

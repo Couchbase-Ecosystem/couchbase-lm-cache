@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import asyncio
+import ctypes
 from types import SimpleNamespace
 
 from couchbase_lm_cache.connector import _HAS_LMCACHE, CouchbaseConnector
@@ -21,8 +22,17 @@ class _MemoryObj:
         self.byte_array = memoryview(self.buffer)
 
 
+class _CtypesMemoryObj:
+    """Mimics LMCache's ``byte_array``: a memoryview of a ``c_ubyte`` array."""
+
+    def __init__(self, size=16):
+        self.buffer = (ctypes.c_ubyte * size)()
+        self.byte_array = memoryview(self.buffer)
+
+
 class _LocalCPUBackend:
-    def __init__(self):
+    def __init__(self, memory_obj_cls=None):
+        self.memory_obj_cls = memory_obj_cls or _MemoryObj
         if _HAS_LMCACHE:
             assert LMCacheEngineConfig is not None
             assert LMCacheMetadata is not None
@@ -44,7 +54,7 @@ class _LocalCPUBackend:
 
     def allocate(self, shapes, dtypes, fmt):
         del shapes, dtypes, fmt
-        return _MemoryObj()
+        return self.memory_obj_cls()
 
 
 class _Store:
@@ -111,3 +121,40 @@ async def _exercise_connector(monkeypatch):
 
 def test_connector_put_get_exists(monkeypatch):
     asyncio.run(_exercise_connector(monkeypatch))
+
+
+async def _exercise_ctypes_buffers(monkeypatch):
+    monkeypatch.setattr("couchbase_lm_cache.connector.CouchbaseKVStore", _Store)
+    cfg = SimpleNamespace(
+        extra_config={
+            "remote_storage_plugin.couchbase.connection_string": "couchbase://localhost",
+            "remote_storage_plugin.couchbase.username": "Administrator",
+            "remote_storage_plugin.couchbase.password": "password",
+            "remote_storage_plugin.couchbase.bucket_name": "lmcache",
+        }
+    )
+    connector = CouchbaseConnector(
+        loop=asyncio.get_running_loop(),
+        local_cpu_backend=_LocalCPUBackend(_CtypesMemoryObj),
+        config=cfg,
+        plugin_name="couchbase",
+    )
+    connector.meta_shapes = []
+    connector.meta_dtypes = []
+    connector.meta_fmt = None
+
+    obj = _CtypesMemoryObj()
+    assert obj.byte_array.format == "<B"
+    obj.byte_array.cast("B")[:] = b"sixteen-byte-kv!"
+    key = _Key("ctypes")
+    await connector.put(key, obj)
+    await connector.batched_put([_Key("ctypes-batch")], [obj])
+    assert connector.store.docs["ctypes"] == b"sixteen-byte-kv!"
+
+    got = await connector.get(key)
+    assert bytes(got.byte_array) == b"sixteen-byte-kv!"
+    await connector.close()
+
+
+def test_connector_handles_lmcache_ctypes_buffers(monkeypatch):
+    asyncio.run(_exercise_ctypes_buffers(monkeypatch))
