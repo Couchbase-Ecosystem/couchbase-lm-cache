@@ -1,0 +1,362 @@
+{
+ "Title": {
+  "min": 150,
+  "segments": [
+   {
+    "at": 0.6,
+    "text": "This is a short look at how L L M servers process long prompts, why that work is often repeated, and how storing it in Couchbase lets every server reuse it."
+   }
+  ]
+ },
+ "Context": {
+  "min": 120,
+  "segments": [
+   {
+    "at": 0.3,
+    "text": "When your app calls an L L M, it sends a prompt to a server, like V L L M running on a GPU."
+   },
+   {
+    "text": "The prompt holds instructions, documents, or the chat history."
+   },
+   {
+    "text": "The model reads all of it,"
+   },
+   {
+    "gap": 0.15,
+    "text": "and then writes the answer, one word at a time."
+   }
+  ]
+ },
+ "Agenda": {
+  "min": 120,
+  "segments": [
+   {
+    "text": "That reading step is where the waste hides."
+   },
+   {
+    "text": "We'll cover the problem,"
+   },
+   {
+    "gap": 0.1,
+    "text": "the solution,"
+   },
+   {
+    "gap": 0.1,
+    "text": "and a real demo."
+   }
+  ]
+ },
+ "Prefill": {
+  "min": 120,
+  "segments": [
+   {
+    "at": 0.5,
+    "text": "As the model reads, it turns every token into keys and values."
+   },
+   {
+    "text": "This is the K V cache, the model's working memory for the prompt. The step is called prefill, and the answer can't start until it's done."
+   }
+  ]
+ },
+ "Hook": {
+  "min": 120,
+  "segments": [
+   {
+    "text": "This is where L L Ms run into a memory problem."
+   },
+   {
+    "text": "In our demo model, an eight billion parameter Kwen three, every token takes a hundred and forty-four kilobytes of GPU memory."
+   },
+   {
+    "text": "GPUs can't hold much of it."
+   }
+  ]
+ },
+ "Size": {
+  "min": 120,
+  "segments": [
+   {
+    "at": 0.5,
+    "text": "The number comes from the model's shape. For every token, each of its thirty-six layers keeps a key and a value."
+   },
+   {
+    "text": "Each one is two kilobytes."
+   },
+   {
+    "text": "Across all the layers, that adds up to a hundred and forty-four kilobytes per token."
+   },
+   {
+    "text": "Our ten thousand token document becomes about one point four gigabytes, from just twenty-eight kilobytes of text."
+   }
+  ]
+ },
+ "Architectures": {
+  "min": 120,
+  "segments": [
+   {
+    "text": "The exact size depends on the architecture, meaning how many layers keep keys and values, how many heads share them, and whether they're compressed."
+   },
+   {
+    "text": "Our demo model needs a hundred and forty-four kilobytes per token. MiniMax M3, released this year, needs about a hundred and twenty."
+   },
+   {
+    "text": "GLM five point three compresses its keys and values, down to about ninety kilobytes."
+   },
+   {
+    "text": "Hybrid designs keep a cache in only some of their layers. Kwen three point eight needs sixty-four kilobytes, and Kimi K3 needs twenty-seven."
+   },
+   {
+    "text": "Newer architectures are designed to shrink this cost."
+   }
+  ]
+ },
+ "ContextGrowth": {
+  "min": 120,
+  "segments": [
+   {
+    "text": "Context windows, though, have grown even faster, from a few thousand tokens to a million."
+   },
+   {
+    "text": "At its forty thousand token limit, our demo model needs five and a half gigabytes for one request."
+   },
+   {
+    "text": "The newer Kwen three point eight, at two hundred and sixty thousand tokens, needs sixteen."
+   },
+   {
+    "text": "At a million tokens, Kimi K3 needs twenty-seven gigabytes, and GLM five point three about eighty-eight."
+   },
+   {
+    "text": "MiniMax M3 needs about a hundred and twenty gigabytes. That's more than an entire eighty gigabyte GPU, for a single request."
+   },
+   {
+    "text": "Every user being served adds another one."
+   }
+  ]
+ },
+ "Waste": {
+  "min": 120,
+  "segments": [
+   {
+    "text": "Back in our demo, on a twenty-four gigabyte GPU, the model itself takes fifteen,"
+   },
+   {
+    "gap": 0.15,
+    "text": "leaving room for just two contexts like ours."
+   },
+   {
+    "text": "So the cache gets thrown away when other sessions need the space,"
+   },
+   {
+    "gap": 0.15,
+    "text": "when the next turn goes to another server,"
+   },
+   {
+    "gap": 0.15,
+    "text": "or when the server restarts."
+   },
+   {
+    "text": "Each time, the whole context is read again."
+   }
+  ]
+ },
+ "Quotes": {
+  "min": 120,
+  "segments": [
+   {
+    "text": "This is a known problem."
+   },
+   {
+    "text": "According to the V L L M team, memory is the bottleneck of L L M serving."
+   },
+   {
+    "text": "NVIDIA notes that the cost of reading a prompt grows quadratically with its length."
+   },
+   {
+    "text": "The L M Cache paper reports that the K V cache users store has grown far beyond what GPU memory can hold."
+   }
+  ]
+ },
+ "Providers": {
+  "min": 120,
+  "segments": [
+   {
+    "text": "That's why the big A I providers already cache prompts in their own APIs,"
+   },
+   {
+    "gap": 0.1,
+    "text": "like Open A I,"
+   },
+   {
+    "gap": 0.1,
+    "text": "and Anthropic."
+   },
+   {
+    "text": "But if you run your own models, you need your own cache."
+   }
+  ]
+ },
+ "UseCase": {
+  "min": 120,
+  "segments": [
+   {
+    "text": "Where this hurts most is a long session, like a chat, or an agent working through a task."
+   },
+   {
+    "text": "Every turn resends the whole conversation, including the instructions, the documents, and every earlier turn."
+   },
+   {
+    "text": "If the next turn lands on another server, or the cache was evicted while the user was thinking, all of it is read again."
+   }
+  ]
+ },
+ "Solution": {
+  "min": 120,
+  "segments": [
+   {
+    "text": "The fix is to keep the K V cache in Couchbase."
+   },
+   {
+    "text": "Server A computes it once, and saves it."
+   },
+   {
+    "text": "Server B loads it, instead of computing it again."
+   },
+   {
+    "text": "L M Cache moves the cache off the GPU, and the Couchbase connector stores it where every server can reach it."
+   }
+  ]
+ },
+ "Storage": {
+  "min": 120,
+  "segments": [
+   {
+    "at": 0.5,
+    "text": "Here's how it's stored. L M Cache splits the cache into forty chunks."
+   },
+   {
+    "text": "Each chunk is thirty-six megabytes."
+   },
+   {
+    "text": "The connector stores it as thirty-six documents of one megabyte, plus a small manifest, so servers can read them in parallel."
+   },
+   {
+    "text": "Forty chunks times thirty-seven documents comes to one thousand, four hundred and eighty documents."
+   }
+  ]
+ },
+ "Reuse": {
+  "min": 120,
+  "segments": [
+   {
+    "text": "When the next turn reaches server B, it hashes the tokens into the same forty keys."
+   },
+   {
+    "text": "Couchbase has all forty."
+   },
+   {
+    "text": "Server B loads them, instead of reading the whole context again,"
+   },
+   {
+    "gap": 0.15,
+    "text": "and only reads the last few tokens before it starts answering."
+   }
+  ]
+ },
+ "DemoIntro": {
+  "min": 120,
+  "segments": [
+   {
+    "text": "In the demo, two GPU servers share one Couchbase bucket."
+   },
+   {
+    "text": "Server A gets a ten thousand token context. Then the same context arrives at server B, like the next turn of a session. Watch what server B finds."
+   }
+  ]
+ },
+ "ProofRun": {
+  "min": 120,
+  "segments": [
+   {
+    "at": 0.4,
+    "text": "Server A gets the context and the question."
+   },
+   {
+    "at": 4.0,
+    "text": "Couchbase has none of the chunks yet, so the GPU reads everything,"
+   },
+   {
+    "gap": 0.15,
+    "text": "and L M Cache saves them to Couchbase as it goes."
+   },
+   {
+    "text": "The answer is six, six, nine, two, J."
+   },
+   {
+    "gap": 2.3,
+    "text": "Couchbase now holds one thousand, four hundred and eighty documents."
+   },
+   {
+    "gap": 1.6,
+    "text": "Server B gets the same context, and finds all forty chunks,"
+   },
+   {
+    "gap": 0.15,
+    "text": "so it loads them, instead of computing."
+   },
+   {
+    "text": "Same answer, two point three times sooner."
+   }
+  ]
+ },
+ "ProofConsole": {
+  "min": 120,
+  "segments": [
+   {
+    "at": 0.4,
+    "text": "In the Couchbase console, each chunk has a small manifest,"
+   },
+   {
+    "gap": 0.15,
+    "text": "and its one megabyte shards."
+   },
+   {
+    "gap": 0.9,
+    "text": "The manifest lists thirty-six shards, thirty-six megabytes in total."
+   }
+  ]
+ },
+ "Results": {
+  "min": 120,
+  "segments": [
+   {
+    "text": "With Couchbase, a session's context is read once, and any server can reuse it."
+   },
+   {
+    "text": "The cache is shared by every server,"
+   },
+   {
+    "gap": 0.1,
+    "text": "survives evictions and restarts,"
+   },
+   {
+    "gap": 0.1,
+    "text": "and saves the GPU from repeating work on every turn."
+   },
+   {
+    "text": "In this demo, the answer started two point three times sooner."
+   }
+  ]
+ },
+ "Outro": {
+  "min": 150,
+  "tail": 2.0,
+  "segments": [
+   {
+    "text": "Compute the prompt once. Reuse it from Couchbase."
+   },
+   {
+    "text": "The connector is open source, on GitHub."
+   }
+  ]
+ }
+}
