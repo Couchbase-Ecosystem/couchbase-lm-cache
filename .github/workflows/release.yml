@@ -69,7 +69,10 @@ jobs:
           path: notes.md
 
   publish-testpypi:
-    if: github.event_name == 'workflow_dispatch'
+    # Forks have no trusted publisher; skip rather than fail at upload.
+    if: >-
+      github.repository == 'Couchbase-Ecosystem/couchbase-lm-cache' &&
+      github.event_name == 'workflow_dispatch'
     needs: build
     runs-on: ubuntu-latest
     environment:
@@ -88,7 +91,10 @@ jobs:
           skip-existing: true
 
   publish-pypi:
-    if: startsWith(github.ref, 'refs/tags/')
+    # A manual run on a tag also has a refs/tags/ ref; keep those TestPyPI-only.
+    if: >-
+      github.repository == 'Couchbase-Ecosystem/couchbase-lm-cache' &&
+      github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
     needs: build
     runs-on: ubuntu-latest
     environment:
