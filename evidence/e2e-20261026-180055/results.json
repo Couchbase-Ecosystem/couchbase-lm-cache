@@ -1,0 +1,208 @@
+{
+  "started_at": "2026-10-26T17:00:55.139534+00:00",
+  "model": "Qwen/Qwen3-0.6B",
+  "couchbase_before": {
+    "item_count": 4524,
+    "mem_used_mb": 2344.0,
+    "data_used_mb": 4487.6
+  },
+  "trials": [
+    {
+      "trial": 1,
+      "seed": "14c979fe3775",
+      "expected_answer": "5606-Y",
+      "vllm_a_cold": {
+        "ttft_s": 0.9361270480003441,
+        "total_s": 0.9440292119979858,
+        "text": " 5606-Y\n\nAnswer:\nThe master access",
+        "first_token_logprob": -0.29905253648757935,
+        "prompt_tokens": 6775
+      },
+      "vllm_b_from_couchbase": {
+        "ttft_s": 0.8747800899982394,
+        "total_s": 0.9156405299981998,
+        "text": " 5606-Y\n\nAnswer:\nThe master access",
+        "first_token_logprob": -0.32113298773765564,
+        "prompt_tokens": 6775
+      },
+      "vllm_b_cold_baseline": {
+        "ttft_s": 0.24302358200293384,
+        "total_s": 0.31963421100226697,
+        "text": " 4944-G\n\nAnswer:\n494",
+        "first_token_logprob": -0.258459210395813,
+        "prompt_tokens": 6772
+      },
+      "answer_correct_a": true,
+      "answer_correct_b": true,
+      "couchbase_l2_chunks_loaded_by_b": 26,
+      "couchbase_after_cold": {
+        "item_count": 5278,
+        "mem_used_mb": 2427.6,
+        "data_used_mb": 5846.5
+      },
+      "lmcache_a_log": [
+        "\u001b[32;20m[2026-10-26 17:00:55,236] LMCache INFO:\u001b[0m Stored 2048 tokens in 0.006 seconds \u001b[3m(lmcache_driven_transfer.py:834:lmcache.v1.multiprocess.modules.lmcache_driven_transfer)\u001b[0m",
+        "\u001b[32;20m[2026-10-26 17:00:55,244] LMCache INFO:\u001b[0m Stored 2048 tokens in 0.003 seconds \u001b[3m(lmcache_driven_transfer.py:834:lmcache.v1.multiprocess.modules.lmcache_driven_transfer)\u001b[0m",
+        "\u001b[32;20m[2026-10-26 17:00:55,308] LMCache INFO:\u001b[0m Stored 2048 tokens in 0.032 seconds \u001b[3m(lmcache_driven_transfer.py:834:lmcache.v1.multiprocess.modules.lmcache_driven_transfer)\u001b[0m",
+        "\u001b[32;20m[2026-10-26 17:00:55,496] LMCache INFO:\u001b[0m Stored 512 tokens in 0.115 seconds \u001b[3m(lmcache_driven_transfer.py:834:lmcache.v1.multiprocess.modules.lmcache_driven_transfer)\u001b[0m"
+      ],
+      "lmcache_b_log": [
+        "\u001b[32;20m[2026-10-26 17:01:11,861] LMCache INFO:\u001b[0m Prefetch request completed (L1+L2): 26/26 retained keys (0 L1, 26 L2) in 689.9 ms (external_request_id=cmpl-ab412baa640a4649-0-978d4ef0, prefetch_request_id=6) \u001b[3m(storage_manager.py:651:lmcache.v1.distributed.storage_manager)\u001b[0m",
+        "\u001b[32;20m[2026-10-26 17:01:11,888] LMCache INFO:\u001b[0m Retrieved 6656 tokens in 0.010 seconds \u001b[3m(lmcache_driven_transfer.py:1100:lmcache.v1.multiprocess.modules.lmcache_driven_transfer)\u001b[0m"
+      ]
+    },
+    {
+      "trial": 2,
+      "seed": "93a55a30c016",
+      "expected_answer": "4500-H",
+      "vllm_a_cold": {
+        "ttft_s": 0.30047850100163487,
+        "total_s": 0.35446896299981745,
+        "text": " 4500-H\nAnswer: 45",
+        "first_token_logprob": -0.3374709486961365,
+        "prompt_tokens": 6787
+      },
+      "vllm_b_from_couchbase": {
+        "ttft_s": 1.0206652519991621,
+        "total_s": 1.0630204989975027,
+        "text": " 4500-H\nAnswer: 45",
+        "first_token_logprob": -0.28473636507987976,
+        "prompt_tokens": 6787
+      },
+      "vllm_b_cold_baseline": {
+        "ttft_s": 0.2470102460029011,
+        "total_s": 0.2952333520006505,
+        "text": " 7344-D\n\nAnswer:\nThe master access",
+        "first_token_logprob": -0.4386309087276459,
+        "prompt_tokens": 6777
+      },
+      "answer_correct_a": true,
+      "answer_correct_b": true,
+      "couchbase_l2_chunks_loaded_by_b": 26,
+      "couchbase_after_cold": {
+        "item_count": 6785,
+        "mem_used_mb": 2632.8,
+        "data_used_mb": 8187.2
+      },
+      "lmcache_a_log": [
+        "\u001b[32;20m[2026-10-26 17:01:20,654] LMCache INFO:\u001b[0m Stored 2048 tokens in 0.011 seconds \u001b[3m(lmcache_driven_transfer.py:834:lmcache.v1.multiprocess.modules.lmcache_driven_transfer)\u001b[0m",
+        "\u001b[32;20m[2026-10-26 17:01:20,657] LMCache INFO:\u001b[0m Stored 2048 tokens in 0.002 seconds \u001b[3m(lmcache_driven_transfer.py:834:lmcache.v1.multiprocess.modules.lmcache_driven_transfer)\u001b[0m",
+        "\u001b[32;20m[2026-10-26 17:01:20,777] LMCache INFO:\u001b[0m Stored 2048 tokens in 0.072 seconds \u001b[3m(lmcache_driven_transfer.py:834:lmcache.v1.multiprocess.modules.lmcache_driven_transfer)\u001b[0m",
+        "\u001b[32;20m[2026-10-26 17:01:21,157] LMCache INFO:\u001b[0m Stored 512 tokens in 0.292 seconds \u001b[3m(lmcache_driven_transfer.py:834:lmcache.v1.multiprocess.modules.lmcache_driven_transfer)\u001b[0m"
+      ],
+      "lmcache_b_log": [
+        "\u001b[32;20m[2026-10-26 17:01:31,831] LMCache INFO:\u001b[0m Prefetch request completed (L1+L2): 26/26 retained keys (0 L1, 26 L2) in 825.9 ms (external_request_id=cmpl-8a820a0560d458f1-0-adde5d19, prefetch_request_id=8) \u001b[3m(storage_manager.py:651:lmcache.v1.distributed.storage_manager)\u001b[0m",
+        "\u001b[32;20m[2026-10-26 17:01:31,869] LMCache INFO:\u001b[0m Retrieved 6656 tokens in 0.014 seconds \u001b[3m(lmcache_driven_transfer.py:1100:lmcache.v1.multiprocess.modules.lmcache_driven_transfer)\u001b[0m"
+      ]
+    },
+    {
+      "trial": 3,
+      "seed": "ad84d444e8b7",
+      "expected_answer": "2025-D",
+      "vllm_a_cold": {
+        "ttft_s": 0.2995040120003978,
+        "total_s": 0.35353295499953674,
+        "text": " 2025-D\n\nEntry 200",
+        "first_token_logprob": -0.305595725774765,
+        "prompt_tokens": 6799
+      },
+      "vllm_b_from_couchbase": {
+        "ttft_s": 1.1040794299988193,
+        "total_s": 1.1456937189977907,
+        "text": " 2025-D\nEntry 200",
+        "first_token_logprob": -0.293978750705719,
+        "prompt_tokens": 6799
+      },
+      "vllm_b_cold_baseline": {
+        "ttft_s": 0.2506273709986999,
+        "total_s": 0.30889495099836495,
+        "text": " 3850-R\nAnswer:\n385",
+        "first_token_logprob": -0.3206280767917633,
+        "prompt_tokens": 6773
+      },
+      "answer_correct_a": true,
+      "answer_correct_b": true,
+      "couchbase_l2_chunks_loaded_by_b": 26,
+      "couchbase_after_cold": {
+        "item_count": 7907,
+        "mem_used_mb": 2304.4,
+        "data_used_mb": 8926.3
+      },
+      "lmcache_a_log": [
+        "\u001b[32;20m[2026-10-26 17:01:41,612] LMCache INFO:\u001b[0m Stored 2048 tokens in 0.007 seconds \u001b[3m(lmcache_driven_transfer.py:834:lmcache.v1.multiprocess.modules.lmcache_driven_transfer)\u001b[0m",
+        "\u001b[32;20m[2026-10-26 17:01:41,622] LMCache INFO:\u001b[0m Stored 2048 tokens in 0.003 seconds \u001b[3m(lmcache_driven_transfer.py:834:lmcache.v1.multiprocess.modules.lmcache_driven_transfer)\u001b[0m",
+        "\u001b[32;20m[2026-10-26 17:01:41,680] LMCache INFO:\u001b[0m Stored 2048 tokens in 0.014 seconds \u001b[3m(lmcache_driven_transfer.py:834:lmcache.v1.multiprocess.modules.lmcache_driven_transfer)\u001b[0m",
+        "\u001b[32;20m[2026-10-26 17:01:42,060] LMCache INFO:\u001b[0m Stored 512 tokens in 0.166 seconds \u001b[3m(lmcache_driven_transfer.py:834:lmcache.v1.multiprocess.modules.lmcache_driven_transfer)\u001b[0m"
+      ],
+      "lmcache_b_log": [
+        "\u001b[32;20m[2026-10-26 17:01:51,876] LMCache INFO:\u001b[0m Prefetch request completed (L1+L2): 26/26 retained keys (0 L1, 26 L2) in 895.5 ms (external_request_id=cmpl-98a70a74cf5b0b76-0-871a1c7f, prefetch_request_id=10) \u001b[3m(storage_manager.py:651:lmcache.v1.distributed.storage_manager)\u001b[0m",
+        "\u001b[32;20m[2026-10-26 17:01:51,915] LMCache INFO:\u001b[0m Retrieved 6656 tokens in 0.015 seconds \u001b[3m(lmcache_driven_transfer.py:1100:lmcache.v1.multiprocess.modules.lmcache_driven_transfer)\u001b[0m"
+      ]
+    }
+  ],
+  "restart": {
+    "vllm_a_after_restart": {
+      "ttft_s": 1.7319075269988389,
+      "total_s": 1.7744193020007515,
+      "text": " 5606-Y\n\nAnswer:\nThe master access",
+      "first_token_logprob": -0.296079158782959,
+      "prompt_tokens": 6775
+    },
+    "answer_correct": true,
+    "couchbase_l2_chunks_loaded": 1,
+    "lmcache_a_log": [
+      "\u001b[32;20m[2026-10-26 17:05:46,844] LMCache INFO:\u001b[0m Prefetch request completed (L1+L2): 1/26 retained keys (0 L1, 1 L2) in 1458.5 ms (external_request_id=cmpl-9b8068ba1dcc360a-0-b62a2cda, prefetch_request_id=0) \u001b[3m(storage_manager.py:651:lmcache.v1.distributed.storage_manager)\u001b[0m",
+      "\u001b[32;20m[2026-10-26 17:05:46,858] LMCache INFO:\u001b[0m Retrieved 256 tokens in 0.008 seconds \u001b[3m(lmcache_driven_transfer.py:1100:lmcache.v1.multiprocess.modules.lmcache_driven_transfer)\u001b[0m",
+      "\u001b[32;20m[2026-10-26 17:05:46,901] LMCache INFO:\u001b[0m Stored 2048 tokens in 0.006 seconds \u001b[3m(lmcache_driven_transfer.py:834:lmcache.v1.multiprocess.modules.lmcache_driven_transfer)\u001b[0m",
+      "\u001b[32;20m[2026-10-26 17:05:46,919] LMCache INFO:\u001b[0m Stored 2048 tokens in 0.003 seconds \u001b[3m(lmcache_driven_transfer.py:834:lmcache.v1.multiprocess.modules.lmcache_driven_transfer)\u001b[0m",
+      "\u001b[32;20m[2026-10-26 17:05:46,957] LMCache INFO:\u001b[0m Stored 2048 tokens in 0.008 seconds \u001b[3m(lmcache_driven_transfer.py:834:lmcache.v1.multiprocess.modules.lmcache_driven_transfer)\u001b[0m",
+      "\u001b[32;20m[2026-10-26 17:05:47,017] LMCache INFO:\u001b[0m Stored 256 tokens in 0.005 seconds \u001b[3m(lmcache_driven_transfer.py:834:lmcache.v1.multiprocess.modules.lmcache_driven_transfer)\u001b[0m"
+    ]
+  },
+  "couchbase_after": {
+    "item_count": 9048,
+    "mem_used_mb": 2199.8,
+    "data_used_mb": 8910.1
+  },
+  "couchbase_sample_documents": [
+    {
+      "id": "lmcache:Qwen/Qwen3-0.6B@0x01000100@0@01198cabf2b3214ad1b8bc691e70719943e732ff22725298b07a62abdd4d36cb"
+    },
+    {
+      "id": "lmcache:Qwen/Qwen3-0.6B@0x01000100@0@01198cabf2b3214ad1b8bc691e70719943e732ff22725298b07a62abdd4d36cb::shard::0"
+    },
+    {
+      "id": "lmcache:Qwen/Qwen3-0.6B@0x01000100@0@01198cabf2b3214ad1b8bc691e70719943e732ff22725298b07a62abdd4d36cb::shard::1"
+    },
+    {
+      "id": "lmcache:Qwen/Qwen3-0.6B@0x01000100@0@01198cabf2b3214ad1b8bc691e70719943e732ff22725298b07a62abdd4d36cb::shard::10"
+    },
+    {
+      "id": "lmcache:Qwen/Qwen3-0.6B@0x01000100@0@01198cabf2b3214ad1b8bc691e70719943e732ff22725298b07a62abdd4d36cb::shard::11"
+    },
+    {
+      "id": "lmcache:Qwen/Qwen3-0.6B@0x01000100@0@01198cabf2b3214ad1b8bc691e70719943e732ff22725298b07a62abdd4d36cb::shard::12"
+    },
+    {
+      "id": "lmcache:Qwen/Qwen3-0.6B@0x01000100@0@01198cabf2b3214ad1b8bc691e70719943e732ff22725298b07a62abdd4d36cb::shard::13"
+    },
+    {
+      "id": "lmcache:Qwen/Qwen3-0.6B@0x01000100@0@01198cabf2b3214ad1b8bc691e70719943e732ff22725298b07a62abdd4d36cb::shard::14"
+    }
+  ],
+  "finished_at": "2026-10-26T17:05:47.323931+00:00",
+  "summary": {
+    "trials": 3,
+    "median_ttft_ms_vllm_a_cold": 300.5,
+    "median_ttft_ms_vllm_b_cold": 247.0,
+    "median_ttft_ms_vllm_b_from_couchbase": 1020.7,
+    "all_answers_correct": true,
+    "every_trial_loaded_from_couchbase": true,
+    "max_first_token_logprob_delta": 0.0527,
+    "couchbase_documents_added": 4524,
+    "ttft_ms_vllm_a_after_restart": 1731.9,
+    "restart_answer_correct": true,
+    "restart_loaded_from_couchbase": true,
+    "passed": true
+  }
+}

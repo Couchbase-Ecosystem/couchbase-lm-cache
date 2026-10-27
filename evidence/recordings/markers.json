@@ -1,0 +1,64 @@
+{
+  "note": "video_s = seconds from the start of 01-demo.mp4 and 02-couchbase-buckets.mp4 (same timeline)",
+  "markers": [
+    {
+      "name": "start",
+      "video_s": 0.5
+    },
+    {
+      "name": "request_a_main",
+      "video_s": 4.51
+    },
+    {
+      "name": "first_token_a_main",
+      "ttft": 2.707757437998225,
+      "video_s": 7.21
+    },
+    {
+      "name": "settled_a_main",
+      "found": 0,
+      "total": 40,
+      "items": 1480,
+      "video_s": 20.93
+    },
+    {
+      "name": "request_b_main",
+      "video_s": 24.44
+    },
+    {
+      "name": "first_token_b_main",
+      "ttft": 1.171975637000287,
+      "video_s": 25.61
+    },
+    {
+      "name": "settled_b_main",
+      "found": 40,
+      "total": 40,
+      "items": 1480,
+      "video_s": 29.92
+    },
+    {
+      "name": "request_b_other",
+      "video_s": 33.42
+    },
+    {
+      "name": "first_token_b_other",
+      "ttft": 2.654591907001304,
+      "video_s": 36.08
+    },
+    {
+      "name": "settled_b_other",
+      "found": 0,
+      "total": 40,
+      "items": 2960,
+      "video_s": 51.2
+    },
+    {
+      "name": "summary",
+      "a": 2.707757437998225,
+      "b": 1.171975637000287,
+      "c": 2.654591907001304,
+      "video_s": 53.2
+    }
+  ]
+}
