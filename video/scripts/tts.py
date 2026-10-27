@@ -244,18 +244,23 @@ def energy(take: Path) -> np.ndarray:
     return 20 * np.log10(np.sqrt((frames**2).mean(axis=1)) + 1e-9)
 
 
-def quietest(db: np.ndarray, lo: float, hi: float) -> float:
-    """Middle of the quietest stretch between lo and hi seconds.
+def quietest(db: np.ndarray, lo: float, hi: float, threshold: float = -45.0) -> float:
+    """Middle of the longest quiet stretch between lo and hi seconds.
 
-    Silence detection alone can mistake a soft final "s" for a pause; the
-    quietest stretch is the real pause between two lines.
+    The longest stretch below `threshold` is the pause between two lines; the
+    deepest single point can be a stop consonant inside a word (the silent
+    closure in "G-PU"), and silence detection can mistake a soft final "s" for
+    a pause. Without any stretch below `threshold` (lines run together), the
+    longest stretch within 6 dB of the quietest point is used.
     """
 
     a, b = max(0, int(lo * 100)), min(len(db), int(hi * 100) + 1)
     if b - a < 3:
         return (lo + hi) / 2
     window = db[a:b]
-    quiet = window <= window.min() + 3
+    quiet = window <= threshold
+    if not quiet.any():
+        quiet = window <= window.min() + 6
     best, run, start = (0, 0), 0, 0
     for i, q in enumerate(quiet):
         if q:
@@ -267,6 +272,20 @@ def quietest(db: np.ndarray, lo: float, hi: float) -> float:
         else:
             run = 0
     return (a + (best[0] + best[1]) / 2) / 100
+
+
+def in_pause(db: np.ndarray, cut: float, threshold: float = -45.0, frames: int = 8) -> bool:
+    """Whether `cut` lies inside at least `frames` × 10 ms of real silence."""
+
+    i = int(cut * 100)
+    if not 0 <= i < len(db) or db[i] > threshold:
+        return False
+    a = b = i
+    while a > 0 and db[a - 1] <= threshold:
+        a -= 1
+    while b < len(db) - 1 and db[b + 1] <= threshold:
+        b += 1
+    return b - a + 1 >= frames
 
 
 def cut_points(
@@ -456,7 +475,7 @@ def chirp(
 
 def gemini_take(
     args: argparse.Namespace, texts: list[str], take: Path
-) -> list[tuple[float, float, float]]:
+) -> list[tuple[float, float, float, bool]]:
     """Make sure `take` holds one recording of the script; return (start, end, ratio) per line."""
 
     voice = args.voice or "Charon"
@@ -498,10 +517,20 @@ def gemini_take(
 
     with tempfile.TemporaryDirectory() as workdir:
         words = transcribe(take, Path(workdir))
-    cuts = cut_points(texts, words, silences(take), energy(take))
+    db = energy(take)
+    cuts = cut_points(texts, words, silences(take), db)
+    clean = [in_pause(db, cut) for cut in cuts]
+    for line, ok in enumerate(clean, start=1):
+        if not ok:
+            print(f"  {take.name}: no clear pause before line {line}: {texts[line]!r}")
     bounds = list(zip([0.0] + cuts, cuts + [duration_seconds(take)]))
     ratios = check(texts, words, bounds)
-    return [(start, end, ratio) for (start, end), ratio in zip(bounds, ratios)]
+    # A line has clean edges when both of its cuts sit in a real pause.
+    edges = [True] + clean + [True]
+    return [
+        (start, end, ratio, edges[i] and edges[i + 1])
+        for i, ((start, end), ratio) in enumerate(zip(bounds, ratios))
+    ]
 
 
 def cut(take: Path, start: float, end: float, path: Path) -> float:
@@ -544,7 +573,7 @@ def gemini(
             stale.unlink()
         return {
             i: cut(TAKE, start, end, OUT / f"{i}.mp3")
-            for i, (start, end, _) in zip(ids, lines)
+            for i, (start, end, _, _) in zip(ids, lines)
         }
 
     takes_dir = OUT / "takes"
@@ -554,7 +583,7 @@ def gemini(
         take = takes_dir / f"take{n}.wav"
         clip_dir = takes_dir / str(n)
         clip_dir.mkdir(exist_ok=True)
-        for i, (start, end, ratio) in zip(ids, gemini_take(args, texts, take)):
+        for i, (start, end, ratio, clean) in zip(ids, gemini_take(args, texts, take)):
             path = clip_dir / f"{i}.mp3"
             candidates[i].append(
                 {
@@ -562,6 +591,7 @@ def gemini(
                     "path": str(path.relative_to(ROOT)),
                     "seconds": cut(take, start, end, path),
                     "match": ratio,
+                    "clean": clean,
                 }
             )
     (takes_dir / "candidates.json").write_text(json.dumps(candidates, indent=1) + "\n")

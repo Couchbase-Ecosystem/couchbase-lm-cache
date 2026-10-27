@@ -105,9 +105,10 @@ def main() -> None:
     for group in sentences(list(candidates)):
         takes = sorted({c["take"] for c in candidates[group[0]]})
 
-        def score(take: int, group: list[str] = group) -> tuple[bool, float]:
+        def score(take: int, group: list[str] = group) -> tuple[bool, bool, float]:
             clips = [next(c for c in candidates[line] if c["take"] == take) for line in group]
             return (
+                all(c.get("clean", True) for c in clips),
                 all(c["match"] >= MIN_MATCH for c in clips),
                 float(np.mean([c["voice"] for c in clips])),
             )
