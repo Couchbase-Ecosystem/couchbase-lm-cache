@@ -185,6 +185,10 @@ python examples/ttft_benchmark.py --prompts 5   # TTFT computed vs. loaded, befo
 [`demo/`](https://github.com/Couchbase-Ecosystem/couchbase-lm-cache/blob/HEAD/demo) is a browser view of the same flow (requests, timings, raw
 LMCache logs and live bucket stats).
 
+[docs/demo.md](https://github.com/Couchbase-Ecosystem/couchbase-lm-cache/blob/HEAD/docs/demo.md) walks through the whole setup step by step: GPU
+access for Docker, the stack, the checks, the benchmark, the browser demo and
+recording the clips.
+
 ## Deployment guide
 
 ### 1. Prepare Couchbase

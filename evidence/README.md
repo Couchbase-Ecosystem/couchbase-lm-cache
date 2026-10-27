@@ -20,7 +20,8 @@ hidden access code, so each answer can be checked.
 | `ttft-20261026-183124-host-cpu-saturated/` | The same 8B restart benchmark while unrelated jobs saturated the CPU (load average ~35 on 24 cores): answers still correct, but loading from Couchbase (3.5-3.9 s) lost to recomputation. Couchbase reads need CPU headroom. |
 | `01-pytest-live-lmcache-couchbase.txt`, `pytest-live.xml` | 48 tests passing inside the LMCache image against live Couchbase: unit tests, the in-process connector through LMCache's `RemoteBackend`, and the MP-mode L2 adapter through LMCache's adapter registry, including 25 MiB payloads above Couchbase's 20 MiB document limit. |
 
-Re-run everything with:
+Re-run everything with the commands below; [docs/demo.md](../docs/demo.md)
+explains every step, including setting up GPU access for Docker:
 
 ```bash
 export MODEL=Qwen/Qwen3-8B GPU_MEMORY_UTILIZATION=0.85 LMCACHE_L1_SIZE_GB=16
