@@ -5,4 +5,11 @@ from couchbase_lm_cache.config import CouchbaseLMCacheConfig
 from couchbase_lm_cache.connector import CouchbaseConnector
 from couchbase_lm_cache.store import CouchbaseKVStore
 
-__all__ = ["CouchbaseConnector", "CouchbaseKVStore", "CouchbaseLMCacheConfig"]
+__version__ = "0.2.0"
+
+__all__ = [
+    "CouchbaseConnector",
+    "CouchbaseKVStore",
+    "CouchbaseLMCacheConfig",
+    "__version__",
+]

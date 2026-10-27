@@ -1,0 +1,149 @@
+# Couchbase + two LMCache-enabled vLLM servers sharing one Couchbase KV-cache tier.
+#
+#   docker compose -f docker/compose.yaml up -d --build
+#
+# Each GPU runs an LMCache multiprocess-mode server (L1 cache in CPU memory, with
+# Couchbase as the shared L2 tier) and a vLLM server that talks to it through
+# LMCacheMPConnector. GPUs are requested through CDI (NVIDIA Container Toolkit
+# >= 1.17 generates the spec automatically; check with `nvidia-ctk cdi list`).
+#
+# Couchbase UI: http://localhost:9091 (Administrator / password)
+# vLLM A (GPU 0): http://localhost:8100   vLLM B (GPU 1): http://localhost:8200
+# LMCache A/B HTTP API: http://localhost:8180 / http://localhost:8280
+
+name: couchbase-lmcache
+
+x-couchbase-env: &couchbase-env
+  LMCACHE_COUCHBASE_CONNSTR: couchbase://couchbase
+  LMCACHE_COUCHBASE_USERNAME: ${LMCACHE_COUCHBASE_USERNAME:-Administrator}
+  LMCACHE_COUCHBASE_PASSWORD: ${LMCACHE_COUCHBASE_PASSWORD:-password}
+  LMCACHE_COUCHBASE_BUCKET: ${LMCACHE_COUCHBASE_BUCKET:-lmcache}
+
+x-image: &image
+  image: couchbase-lm-cache/vllm-lmcache:0.5.6
+
+x-lmcache: &lmcache
+  <<: *image
+  depends_on:
+    couchbase-init:
+      condition: service_completed_successfully
+  ipc: host
+  environment:
+    <<: *couchbase-env
+  entrypoint: ["/opt/venv/bin/lmcache", "server"]
+  command:
+    - --port=6555
+    - --http-host=0.0.0.0
+    - --http-port=8080
+    - --l1-size-gb=${LMCACHE_L1_SIZE_GB:-4}
+    - --eviction-policy=LRU
+    - --max-workers=4
+    - >-
+      --l2-adapter={"type": "plugin",
+      "module_path": "couchbase_lm_cache.l2_adapter",
+      "class_name": "CouchbaseL2Adapter",
+      "adapter_params": {"ttl_seconds": 86400}}
+  healthcheck:
+    test: ["CMD", "curl", "-fs", "http://localhost:8080/healthcheck"]
+    interval: 5s
+    timeout: 3s
+    retries: 60
+
+x-vllm: &vllm
+  <<: *image
+  ipc: host
+  volumes:
+    - hf-cache:/root/.cache/huggingface
+  command:
+    - ${MODEL:-Qwen/Qwen3-0.6B}
+    - --port=8000
+    - --max-model-len=16384
+    - --gpu-memory-utilization=${GPU_MEMORY_UTILIZATION:-0.2}
+    - >-
+      --kv-transfer-config={"kv_connector": "LMCacheMPConnector",
+      "kv_role": "kv_both",
+      "kv_connector_extra_config": {"lmcache.mp.port": 6555}}
+  healthcheck:
+    test: ["CMD", "curl", "-fs", "http://localhost:8000/health"]
+    interval: 5s
+    timeout: 3s
+    retries: 120
+
+services:
+  couchbase:
+    image: couchbase/server:enterprise-8.0.2
+    ports:
+      - "9091:8091"
+    ulimits:
+      nofile: 200000
+    volumes:
+      - couchbase-data:/opt/couchbase/var
+    healthcheck:
+      # /pools needs credentials once the cluster is initialized; the UI does not.
+      test: ["CMD", "curl", "-fs", "-o", "/dev/null", "http://localhost:8091/ui/index.html"]
+      interval: 5s
+      timeout: 3s
+      retries: 60
+
+  couchbase-init:
+    image: couchbase/server:enterprise-8.0.2
+    depends_on:
+      couchbase:
+        condition: service_healthy
+    environment:
+      <<: *couchbase-env
+      # Size the bucket to hold the KV cache you want served from memory:
+      # Couchbase reads evicted (non-resident) chunks from disk, which is slower.
+      COUCHBASE_RAM_MB: ${COUCHBASE_RAM_MB:-4096}
+      COUCHBASE_BUCKET_RAM_MB: ${COUCHBASE_BUCKET_RAM_MB:-3072}
+    volumes:
+      - ./couchbase-init.sh:/couchbase-init.sh:ro
+    entrypoint: ["/couchbase-init.sh"]
+    restart: "no"
+
+  lmcache-a:
+    <<: *lmcache
+    # The one service that builds the shared image; the others reuse it.
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    devices:
+      - nvidia.com/gpu=0
+    ports:
+      - "8100:8000"
+      - "8180:8080"
+
+  vllm-a:
+    <<: *vllm
+    pull_policy: never
+    network_mode: service:lmcache-a
+    depends_on:
+      lmcache-a:
+        condition: service_healthy
+    devices:
+      - nvidia.com/gpu=0
+
+  lmcache-b:
+    <<: *lmcache
+    pull_policy: never
+    devices:
+      - nvidia.com/gpu=1
+    ports:
+      - "8200:8000"
+      - "8280:8080"
+
+  vllm-b:
+    <<: *vllm
+    pull_policy: never
+    network_mode: service:lmcache-b
+    depends_on:
+      lmcache-b:
+        condition: service_healthy
+    devices:
+      - nvidia.com/gpu=1
+
+volumes:
+  couchbase-data:
+    name: couchbase-lmcache-data
+  hf-cache:
+    name: couchbase-lmcache-hf-cache

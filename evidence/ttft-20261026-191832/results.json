@@ -1,0 +1,199 @@
+{
+  "started_at": "2026-10-26T18:21:45.554887+00:00",
+  "summary": {
+    "model": "Qwen/Qwen3-8B",
+    "prompts": 5,
+    "median_prompt_tokens": 10243,
+    "median_ttft_ms_cold_before_restart": 2671.9,
+    "median_ttft_ms_cold_after_restart": 2693.7,
+    "median_ttft_ms_from_couchbase_after_restart": 1143.9,
+    "speedup_vs_cold_after_restart": 2.35,
+    "chunks_loaded_from_couchbase": 198,
+    "all_answers_correct": true,
+    "answers_match_cold_run": true,
+    "max_first_token_logprob_delta": 0.0609
+  },
+  "cold_before_restart": [
+    {
+      "seed": "8806b78cc8d7",
+      "expected": "8216-Z",
+      "ttft_s": 2.6023546460019134,
+      "total_s": 3.121198060998722,
+      "text": " The master access code for the ledger is 8216-Z.\nOkay, so I need to find the master",
+      "first_token_logprob": -0.7596607208251953,
+      "prompt_tokens": 10231
+    },
+    {
+      "seed": "29f485e621fc",
+      "expected": "1285-S",
+      "ttft_s": 2.6718602940018172,
+      "total_s": 3.1845697550015757,
+      "text": " The master access code for the ledger is 1285-S.\nOkay, so I need to find the master",
+      "first_token_logprob": -0.7151646018028259,
+      "prompt_tokens": 10243
+    },
+    {
+      "seed": "e3b923ad761c",
+      "expected": "8790-Q",
+      "ttft_s": 2.632521584000642,
+      "total_s": 3.1518467649984814,
+      "text": " The master access code for the ledger is 8790-Q.\nOkay, so I need to find the master",
+      "first_token_logprob": -0.8011431097984314,
+      "prompt_tokens": 10216
+    },
+    {
+      "seed": "51e4d062c1a4",
+      "expected": "3758-H",
+      "ttft_s": 2.6826798990005045,
+      "total_s": 3.2004975320014637,
+      "text": " The master access code for the ledger is 3758-H.\nOkay, so I need to find the master",
+      "first_token_logprob": -0.5584882497787476,
+      "prompt_tokens": 10266
+    },
+    {
+      "seed": "e0e7ea17a506",
+      "expected": "5376-U",
+      "ttft_s": 2.680283067002165,
+      "total_s": 3.1983455820009112,
+      "text": " The master access code for the ledger is 5376-U.\nOkay, so I need to find the master",
+      "first_token_logprob": -0.8484277129173279,
+      "prompt_tokens": 10255
+    }
+  ],
+  "from_couchbase_after_restart": [
+    {
+      "seed": "8806b78cc8d7",
+      "expected": "8216-Z",
+      "ttft_s": 2.999835720998817,
+      "total_s": 3.5171594280000136,
+      "text": " The master access code for the ledger is 8216-Z.\nOkay, so I need to find the master",
+      "first_token_logprob": -0.6988104581832886,
+      "prompt_tokens": 10231
+    },
+    {
+      "seed": "29f485e621fc",
+      "expected": "1285-S",
+      "ttft_s": 3.5001606260011613,
+      "total_s": 4.0161820170033025,
+      "text": " The master access code for the ledger is 1285-S.\nOkay, so I need to find the master",
+      "first_token_logprob": -0.7126253247261047,
+      "prompt_tokens": 10243
+    },
+    {
+      "seed": "e3b923ad761c",
+      "expected": "8790-Q",
+      "ttft_s": 1.1439114839995455,
+      "total_s": 1.6607627769990359,
+      "text": " The master access code for the ledger is 8790-Q.\nOkay, so I need to find the master",
+      "first_token_logprob": -0.7541106939315796,
+      "prompt_tokens": 10216
+    },
+    {
+      "seed": "51e4d062c1a4",
+      "expected": "3758-H",
+      "ttft_s": 1.0881141600002593,
+      "total_s": 1.6059285830015142,
+      "text": " The master access code for the ledger is 3758-H.\nOkay, so I need to find the master",
+      "first_token_logprob": -0.5583468675613403,
+      "prompt_tokens": 10266
+    },
+    {
+      "seed": "e0e7ea17a506",
+      "expected": "5376-U",
+      "ttft_s": 1.105867350997869,
+      "total_s": 1.6235412069981976,
+      "text": " The master access code for the ledger is 5376-U.\nOkay, so I need to find the master",
+      "first_token_logprob": -0.8938407897949219,
+      "prompt_tokens": 10255
+    }
+  ],
+  "cold_after_restart": [
+    {
+      "seed": "7468103ed7f8",
+      "expected": "9274-Q",
+      "ttft_s": 2.6653910409986565,
+      "total_s": 3.183276946998376,
+      "text": " The master access code for the ledger is 9274-Q.\nOkay, so I need to find the master",
+      "first_token_logprob": -0.7642432451248169,
+      "prompt_tokens": 10252
+    },
+    {
+      "seed": "25085cfe8e1d",
+      "expected": "4997-C",
+      "ttft_s": 2.7847617600018566,
+      "total_s": 3.3030582970022806,
+      "text": " The master access code for the ledger is 4997-C.\nOkay, so I need to find the master",
+      "first_token_logprob": -0.9084416031837463,
+      "prompt_tokens": 10244
+    },
+    {
+      "seed": "4034c9aa5b3f",
+      "expected": "6301-Z",
+      "ttft_s": 2.7517317839992756,
+      "total_s": 3.2715836119969026,
+      "text": " The master access code for the ledger is 6301-Z.\nOkay, so I need to find the master",
+      "first_token_logprob": -0.8880524635314941,
+      "prompt_tokens": 10256
+    },
+    {
+      "seed": "ed0fbf2bbb3a",
+      "expected": "4740-Q",
+      "ttft_s": 2.693700895000802,
+      "total_s": 3.2127133699978003,
+      "text": " The master access code for the ledger is 4740-Q.\nOkay, so I need to find the master",
+      "first_token_logprob": -0.6304580569267273,
+      "prompt_tokens": 10248
+    },
+    {
+      "seed": "5e4a05bee161",
+      "expected": "8647-G",
+      "ttft_s": 2.690726982000342,
+      "total_s": 3.2100609530025395,
+      "text": " The master access code for the ledger is 8647-G.\nOkay, so I need to find the master",
+      "first_token_logprob": -0.7643905282020569,
+      "prompt_tokens": 10246
+    }
+  ],
+  "couchbase": {
+    "item_count": 12972,
+    "mem_used_mb": 13829.7,
+    "data_used_mb": 16045.1
+  },
+  "lmcache_log": [
+    "\u001b[32;20m[2026-10-26 18:21:48,203] LMCache INFO:\u001b[0m Prefetch request completed (L1+L2): 39/39 retained keys (0 L1, 39 L2) in 2636.6 ms (external_request_id=cmpl-961b2f09bc93827c-0-8ca512ab, prefetch_request_id=0) \u001b[3m(storage_manager.py:651:lmcache.v1.distributed.storage_manager)\u001b[0m",
+    "\u001b[32;20m[2026-10-26 18:21:48,223] LMCache INFO:\u001b[0m Retrieved 9984 tokens in 0.018 seconds \u001b[3m(lmcache_driven_transfer.py:1100:lmcache.v1.multiprocess.modules.lmcache_driven_transfer)\u001b[0m",
+    "\u001b[32;20m[2026-10-26 18:21:52,289] LMCache INFO:\u001b[0m Prefetch request completed (L1+L2): 40/40 retained keys (0 L1, 40 L2) in 3207.0 ms (external_request_id=cmpl-93ac38492e54f71a-0-acccf157, prefetch_request_id=1) \u001b[3m(storage_manager.py:651:lmcache.v1.distributed.storage_manager)\u001b[0m",
+    "\u001b[32;20m[2026-10-26 18:21:52,298] LMCache INFO:\u001b[0m Retrieved 10240 tokens in 0.007 seconds \u001b[3m(lmcache_driven_transfer.py:1100:lmcache.v1.multiprocess.modules.lmcache_driven_transfer)\u001b[0m",
+    "\u001b[32;20m[2026-10-26 18:21:53,895] LMCache INFO:\u001b[0m Prefetch request completed (L1+L2): 39/39 retained keys (0 L1, 39 L2) in 796.4 ms (external_request_id=cmpl-bf2b7a9216eea639-0-94e41d41, prefetch_request_id=2) \u001b[3m(storage_manager.py:651:lmcache.v1.distributed.storage_manager)\u001b[0m",
+    "\u001b[32;20m[2026-10-26 18:21:53,905] LMCache INFO:\u001b[0m Retrieved 9984 tokens in 0.008 seconds \u001b[3m(lmcache_driven_transfer.py:1100:lmcache.v1.multiprocess.modules.lmcache_driven_transfer)\u001b[0m",
+    "\u001b[32;20m[2026-10-26 18:21:55,554] LMCache INFO:\u001b[0m Prefetch request completed (L1+L2): 40/40 retained keys (0 L1, 40 L2) in 793.6 ms (external_request_id=cmpl-841209c3f37c0bb2-0-b0cdda34, prefetch_request_id=3) \u001b[3m(storage_manager.py:651:lmcache.v1.distributed.storage_manager)\u001b[0m",
+    "\u001b[32;20m[2026-10-26 18:21:55,564] LMCache INFO:\u001b[0m Retrieved 10240 tokens in 0.008 seconds \u001b[3m(lmcache_driven_transfer.py:1100:lmcache.v1.multiprocess.modules.lmcache_driven_transfer)\u001b[0m",
+    "\u001b[32;20m[2026-10-26 18:21:57,177] LMCache INFO:\u001b[0m Prefetch request completed (L1+L2): 40/40 retained keys (0 L1, 40 L2) in 809.0 ms (external_request_id=cmpl-b2ae694c1d888126-0-a4a6166f, prefetch_request_id=4) \u001b[3m(storage_manager.py:651:lmcache.v1.distributed.storage_manager)\u001b[0m",
+    "\u001b[32;20m[2026-10-26 18:21:57,187] LMCache INFO:\u001b[0m Retrieved 10240 tokens in 0.007 seconds \u001b[3m(lmcache_driven_transfer.py:1100:lmcache.v1.multiprocess.modules.lmcache_driven_transfer)\u001b[0m",
+    "\u001b[32;20m[2026-10-26 18:21:58,021] LMCache INFO:\u001b[0m Stored 2048 tokens in 0.003 seconds \u001b[3m(lmcache_driven_transfer.py:834:lmcache.v1.multiprocess.modules.lmcache_driven_transfer)\u001b[0m",
+    "\u001b[32;20m[2026-10-26 18:21:58,030] LMCache INFO:\u001b[0m Stored 2048 tokens in 0.002 seconds \u001b[3m(lmcache_driven_transfer.py:834:lmcache.v1.multiprocess.modules.lmcache_driven_transfer)\u001b[0m",
+    "\u001b[32;20m[2026-10-26 18:21:58,456] LMCache INFO:\u001b[0m Stored 2048 tokens in 0.002 seconds \u001b[3m(lmcache_driven_transfer.py:834:lmcache.v1.multiprocess.modules.lmcache_driven_transfer)\u001b[0m",
+    "\u001b[32;20m[2026-10-26 18:21:58,935] LMCache INFO:\u001b[0m Stored 2048 tokens in 0.002 seconds \u001b[3m(lmcache_driven_transfer.py:834:lmcache.v1.multiprocess.modules.lmcache_driven_transfer)\u001b[0m",
+    "\u001b[32;20m[2026-10-26 18:21:59,454] LMCache INFO:\u001b[0m Stored 2048 tokens in 0.002 seconds \u001b[3m(lmcache_driven_transfer.py:834:lmcache.v1.multiprocess.modules.lmcache_driven_transfer)\u001b[0m",
+    "\u001b[32;20m[2026-10-26 18:22:10,330] LMCache INFO:\u001b[0m Stored 2048 tokens in 0.002 seconds \u001b[3m(lmcache_driven_transfer.py:834:lmcache.v1.multiprocess.modules.lmcache_driven_transfer)\u001b[0m",
+    "\u001b[32;20m[2026-10-26 18:22:10,335] LMCache INFO:\u001b[0m Stored 2048 tokens in 0.002 seconds \u001b[3m(lmcache_driven_transfer.py:834:lmcache.v1.multiprocess.modules.lmcache_driven_transfer)\u001b[0m",
+    "\u001b[32;20m[2026-10-26 18:22:10,783] LMCache INFO:\u001b[0m Stored 2048 tokens in 0.002 seconds \u001b[3m(lmcache_driven_transfer.py:834:lmcache.v1.multiprocess.modules.lmcache_driven_transfer)\u001b[0m",
+    "\u001b[32;20m[2026-10-26 18:22:11,260] LMCache INFO:\u001b[0m Stored 2048 tokens in 0.002 seconds \u001b[3m(lmcache_driven_transfer.py:834:lmcache.v1.multiprocess.modules.lmcache_driven_transfer)\u001b[0m",
+    "\u001b[32;20m[2026-10-26 18:22:11,785] LMCache INFO:\u001b[0m Stored 2048 tokens in 0.002 seconds \u001b[3m(lmcache_driven_transfer.py:834:lmcache.v1.multiprocess.modules.lmcache_driven_transfer)\u001b[0m",
+    "\u001b[32;20m[2026-10-26 18:22:20,607] LMCache INFO:\u001b[0m Stored 2048 tokens in 0.002 seconds \u001b[3m(lmcache_driven_transfer.py:834:lmcache.v1.multiprocess.modules.lmcache_driven_transfer)\u001b[0m",
+    "\u001b[32;20m[2026-10-26 18:22:20,613] LMCache INFO:\u001b[0m Stored 2048 tokens in 0.002 seconds \u001b[3m(lmcache_driven_transfer.py:834:lmcache.v1.multiprocess.modules.lmcache_driven_transfer)\u001b[0m",
+    "\u001b[32;20m[2026-10-26 18:22:21,066] LMCache INFO:\u001b[0m Stored 2048 tokens in 0.002 seconds \u001b[3m(lmcache_driven_transfer.py:834:lmcache.v1.multiprocess.modules.lmcache_driven_transfer)\u001b[0m",
+    "\u001b[32;20m[2026-10-26 18:22:21,544] LMCache INFO:\u001b[0m Stored 2048 tokens in 0.002 seconds \u001b[3m(lmcache_driven_transfer.py:834:lmcache.v1.multiprocess.modules.lmcache_driven_transfer)\u001b[0m",
+    "\u001b[32;20m[2026-10-26 18:22:22,067] LMCache INFO:\u001b[0m Stored 2048 tokens in 0.002 seconds \u001b[3m(lmcache_driven_transfer.py:834:lmcache.v1.multiprocess.modules.lmcache_driven_transfer)\u001b[0m",
+    "\u001b[32;20m[2026-10-26 18:22:30,837] LMCache INFO:\u001b[0m Stored 2048 tokens in 0.002 seconds \u001b[3m(lmcache_driven_transfer.py:834:lmcache.v1.multiprocess.modules.lmcache_driven_transfer)\u001b[0m",
+    "\u001b[32;20m[2026-10-26 18:22:30,843] LMCache INFO:\u001b[0m Stored 2048 tokens in 0.002 seconds \u001b[3m(lmcache_driven_transfer.py:834:lmcache.v1.multiprocess.modules.lmcache_driven_transfer)\u001b[0m",
+    "\u001b[32;20m[2026-10-26 18:22:31,297] LMCache INFO:\u001b[0m Stored 2048 tokens in 0.002 seconds \u001b[3m(lmcache_driven_transfer.py:834:lmcache.v1.multiprocess.modules.lmcache_driven_transfer)\u001b[0m",
+    "\u001b[32;20m[2026-10-26 18:22:31,776] LMCache INFO:\u001b[0m Stored 2048 tokens in 0.002 seconds \u001b[3m(lmcache_driven_transfer.py:834:lmcache.v1.multiprocess.modules.lmcache_driven_transfer)\u001b[0m",
+    "\u001b[32;20m[2026-10-26 18:22:32,301] LMCache INFO:\u001b[0m Stored 2048 tokens in 0.002 seconds \u001b[3m(lmcache_driven_transfer.py:834:lmcache.v1.multiprocess.modules.lmcache_driven_transfer)\u001b[0m",
+    "\u001b[32;20m[2026-10-26 18:22:40,063] LMCache INFO:\u001b[0m Stored 2048 tokens in 0.002 seconds \u001b[3m(lmcache_driven_transfer.py:834:lmcache.v1.multiprocess.modules.lmcache_driven_transfer)\u001b[0m",
+    "\u001b[32;20m[2026-10-26 18:22:40,069] LMCache INFO:\u001b[0m Stored 2048 tokens in 0.002 seconds \u001b[3m(lmcache_driven_transfer.py:834:lmcache.v1.multiprocess.modules.lmcache_driven_transfer)\u001b[0m",
+    "\u001b[32;20m[2026-10-26 18:22:40,521] LMCache INFO:\u001b[0m Stored 2048 tokens in 0.002 seconds \u001b[3m(lmcache_driven_transfer.py:834:lmcache.v1.multiprocess.modules.lmcache_driven_transfer)\u001b[0m",
+    "\u001b[32;20m[2026-10-26 18:22:41,005] LMCache INFO:\u001b[0m Stored 2048 tokens in 0.002 seconds \u001b[3m(lmcache_driven_transfer.py:834:lmcache.v1.multiprocess.modules.lmcache_driven_transfer)\u001b[0m",
+    "\u001b[32;20m[2026-10-26 18:22:41,526] LMCache INFO:\u001b[0m Stored 2048 tokens in 0.002 seconds \u001b[3m(lmcache_driven_transfer.py:834:lmcache.v1.multiprocess.modules.lmcache_driven_transfer)\u001b[0m"
+  ]
+}

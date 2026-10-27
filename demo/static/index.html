@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>KV Cache Evidence</title>
+<meta name="viewport" content="width=1920, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root { --bg: #0b0d12; --panel: #141821; --line: #2a3142; --text: #e9edf5; --muted: #8e98ad; --red: #ea2328; --green: #3ddc84; --amber: #ffb547; --blue: #5aa9ff; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; width: 1920px; height: 1080px; overflow: hidden; background: var(--bg); color: var(--text); font-family: Inter, system-ui, sans-serif; }
+  .mono { font-family: "JetBrains Mono", ui-monospace, monospace; }
+  #cols { position: absolute; top: 28px; left: 28px; right: 28px; bottom: 150px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; }
+  .col { background: var(--panel); border: 2px solid var(--line); border-radius: 16px; padding: 22px; display: flex; flex-direction: column; gap: 16px; opacity: .35; transition: opacity .5s, border-color .5s; overflow: hidden; }
+  .col.active, .col.done { opacity: 1; }
+  .col.active { border-color: var(--blue); }
+  .col h2 { margin: 0; font-size: 28px; font-weight: 700; }
+  .col .doc { font-size: 18px; color: var(--muted); margin-top: 4px; }
+  pre.req { margin: 0; font-size: 14.5px; line-height: 1.5; white-space: pre-wrap; word-break: break-word; color: #c9d3e6; background: #0f131b; border-radius: 10px; padding: 14px; min-height: 260px; }
+  .req .m { color: var(--amber); font-weight: 600; } .req .u { color: var(--blue); } .req .k { color: #c792ea; } .req .s { color: #a8d8a0; } .req .n { color: #f78c6c; } .req .e { color: var(--muted); font-style: italic; }
+  .ttft { display: flex; align-items: baseline; justify-content: space-between; }
+  .ttft .l { font-size: 18px; color: var(--muted); }
+  .ttft .v { font-size: 56px; font-weight: 800; font-variant-numeric: tabular-nums; letter-spacing: -1px; }
+  .ttft .v.wait { color: var(--amber); }
+  .answer { font-size: 19px; min-height: 52px; line-height: 1.35; }
+  .answer .exp { display: block; color: var(--muted); font-size: 16px; margin-top: 4px; }
+  .log { flex: 1; background: #0f131b; border-radius: 10px; padding: 12px 14px; overflow: hidden; display: flex; flex-direction: column; gap: 6px; }
+  .log .h { font-size: 13px; letter-spacing: 1.4px; text-transform: uppercase; color: var(--muted); font-weight: 600; margin-bottom: 4px; }
+  .log div.ln { font-size: 14px; line-height: 1.4; color: #c9d3e6; }
+  .ln.cb { color: #ff8a8d; } .ln.hit { color: var(--green); }
+  #bucket { position: absolute; left: 28px; right: 28px; bottom: 28px; height: 100px; background: #1a1012; border: 2px solid var(--red); border-radius: 16px; display: flex; align-items: center; padding: 0 30px; gap: 48px; }
+  #bucket .name { font-size: 24px; font-weight: 700; } #bucket .name span { color: var(--muted); font-weight: 500; }
+  #bucket .stat { font-size: 20px; color: var(--muted); } #bucket .stat b { font-size: 34px; color: var(--text); font-variant-numeric: tabular-nums; margin-right: 6px; }
+  #summary { margin-left: auto; font-size: 20px; color: var(--muted); display: flex; gap: 28px; opacity: 0; transition: opacity .6s; }
+  #summary b { color: var(--text); font-size: 26px; font-variant-numeric: tabular-nums; } #summary .g b { color: var(--green); }
+</style>
+</head>
+<body>
+<div id="cols"></div>
+<div id="bucket">
+  <div class="name">Couchbase <span>bucket "lmcache"</span></div>
+  <div class="stat"><b id="docs">0</b>documents</div>
+  <div class="stat"><b id="mem">0</b>MB in memory</div>
+  <div id="summary"></div>
+</div>
+<script>
+const $ = (id) => document.getElementById(id);
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+const fmt = new Intl.NumberFormat('en-US');
+const markers = []; window.__markers = markers; window.__done = false;
+window.__t0_wall = Date.now() / 1000;
+const mark = (name, extra = {}) => markers.push({ name, wall: Date.now() / 1000, ...extra });
+
+const RUNS = [
+  { server: 'a', doc: 'main', title: 'Server A · GPU 0', label: 'document X' },
+  { server: 'b', doc: 'main', title: 'Server B · GPU 1', label: 'document X (same request)' },
+  { server: 'b', doc: 'other', title: 'Server B · GPU 1', label: 'document Y (different document)' },
+];
+let info, active = null;
+const listeners = [];
+const es = new EventSource('/api/events');
+es.onmessage = (m) => {
+  const e = JSON.parse(m.data);
+  if (e.type === 'couchbase') { $('docs').textContent = fmt.format(e.items); $('mem').textContent = fmt.format(e.mem_mb); window.__items = e.items; return; }
+  if (e.line && active && e.server === active.server && e.type !== 'from_gpu') logLine(active, e);
+  for (const l of [...listeners]) l(e);
+};
+function waitEvent(pred, ms) {
+  return new Promise((resolve) => {
+    const l = (e) => { if (pred(e)) { done(); resolve(e); } };
+    const timer = setTimeout(() => { done(); resolve(null); }, ms);
+    const done = () => { clearTimeout(timer); const i = listeners.indexOf(l); if (i >= 0) listeners.splice(i, 1); };
+    listeners.push(l);
+  });
+}
+function logLine(run, e) {
+  const div = document.createElement('div');
+  div.className = 'ln mono' + (e.type === 'loaded' || (e.type === 'lookup' && +e.found > 0) ? ' hit' : e.type === 'stored' ? ' cb' : '');
+  div.textContent = e.line;
+  const box = run.el.querySelector('.log');
+  box.appendChild(div);
+  while (box.scrollHeight > box.clientHeight && box.children.length > 2) box.removeChild(box.children[1]);
+}
+const esc = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;');
+
+function buildColumns() {
+  for (const run of RUNS) {
+    const d = info.docs[run.doc];
+    const el = document.createElement('div');
+    el.className = 'col';
+    const head = esc(d.head.split('\n').slice(0, 3).join('\\n').slice(0, 110));
+    el.innerHTML = `
+      <div><h2>${run.title}</h2><div class="doc">${run.label} · ${fmt.format(d.tokens)} tokens</div></div>
+      <pre class="req mono"><span class="m">POST</span> <span class="u">http://server-${run.server}:8000/v1/completions</span>
+{
+  <span class="k">"model"</span>: <span class="s">"${info.model}"</span>,
+  <span class="k">"prompt"</span>: <span class="s">"${head}…</span>
+     <span class="e">… ${fmt.format(d.tokens)} tokens …</span>
+     <span class="s">…Question: what is the master access code for the ledger?\\nAnswer:"</span>,
+  <span class="k">"max_tokens"</span>: <span class="n">${info.max_tokens}</span>, <span class="k">"temperature"</span>: <span class="n">0</span>,
+  <span class="k">"stop"</span>: <span class="s">${esc(JSON.stringify(info.stop))}</span>, <span class="k">"stream"</span>: <span class="n">true</span>
+}</pre>
+      <div class="ttft"><span class="l">time to first token</span><span class="v">–</span></div>
+      <div class="answer"></div>
+      <div class="log"><div class="h">LMCache server ${run.server.toUpperCase()} log</div></div>`;
+    $('cols').appendChild(el);
+    run.el = el;
+  }
+}
+
+function request(run) {
+  return new Promise((resolve) => {
+    const v = run.el.querySelector('.v'), ans = run.el.querySelector('.answer');
+    const src = new EventSource(`/api/complete?server=${run.server}&doc=${run.doc}`);
+    let start, tick, text = '', ttft = null;
+    src.onmessage = (m) => {
+      const e = JSON.parse(m.data);
+      if (e.type === 'sent') {
+        start = performance.now(); v.className = 'v wait'; mark(`request_${run.server}_${run.doc}`);
+        tick = setInterval(() => { v.textContent = ((performance.now() - start) / 1000).toFixed(2) + ' s'; }, 30);
+      } else if (e.type === 'first_token') {
+        clearInterval(tick); ttft = e.ttft; v.className = 'v'; v.textContent = ttft.toFixed(2) + ' s';
+        mark(`first_token_${run.server}_${run.doc}`, { ttft });
+      } else if (e.type === 'token') { text += e.text; ans.textContent = text.trim(); }
+      else if (e.type === 'done') {
+        src.close();
+        ans.innerHTML = `${esc(text.trim())}<span class="exp">expected: ${info.docs[run.doc].answer}</span>`;
+        resolve({ ttft, text });
+      }
+    };
+  });
+}
+async function settleItems(before, expectGrowth) {
+  // Couchbase bucket stats refresh a few seconds behind the writes.
+  const t = performance.now();
+  if (expectGrowth) while (window.__items <= before && performance.now() - t < 20000) await sleep(200);
+  let last = -1, since = performance.now();
+  while (performance.now() - since < 4000) { if (window.__items !== last) { last = window.__items; since = performance.now(); } await sleep(200); }
+}
+async function runOne(run) {
+  active = run; run.el.classList.add('active');
+  const itemsBefore = window.__items || 0;
+  const stored = { n: 0 };
+  const off = (e) => { if (e.type === 'stored' && e.server === run.server) stored.n += +e.chunks; };
+  listeners.push(off);
+  const lookup = waitEvent((e) => e.type === 'lookup' && e.server === run.server, 60000);
+  const loaded = waitEvent((e) => e.type === 'loaded' && e.server === run.server, 60000);
+  await sleep(1500);
+  const res = await request(run);
+  const lk = await lookup;
+  if (lk && +lk.found > 0) await Promise.race([loaded, sleep(3000)]);
+  else { const t = performance.now(); while (lk && stored.n < +lk.total && performance.now() - t < 30000) await sleep(200); }
+  listeners.splice(listeners.indexOf(off), 1);
+  await settleItems(itemsBefore, stored.n > 0);
+  mark(`settled_${run.server}_${run.doc}`, { found: lk && +lk.found, total: lk && +lk.total, items: window.__items });
+  run.el.classList.remove('active'); run.el.classList.add('done');
+  active = null;
+  return res;
+}
+async function main() {
+  info = await (await fetch('/api/docs')).json();
+  buildColumns();
+  mark('start');
+  await sleep(2500);
+  const results = [];
+  for (const run of RUNS) { results.push(await runOne(run)); await sleep(2000); }
+  const [a, b, c] = results;
+  $('summary').innerHTML = `<span>A, X computed <b>${a.ttft.toFixed(2)} s</b></span><span class="g">B, X from Couchbase <b>${b.ttft.toFixed(2)} s</b></span><span>B, Y computed <b>${c.ttft.toFixed(2)} s</b></span>`;
+  $('summary').style.opacity = 1;
+  mark('summary', { a: a.ttft, b: b.ttft, c: c.ttft });
+  await sleep(6000);
+  window.__done = true;
+}
+document.fonts.ready.then(() => { if (new URLSearchParams(location.search).has('autoplay')) main(); else addEventListener('keydown', (e) => { if (e.key === ' ') main(); }, { once: true }); });
+</script>
+</body>
+</html>

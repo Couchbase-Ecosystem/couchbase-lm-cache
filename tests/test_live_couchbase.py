@@ -7,7 +7,12 @@ from types import SimpleNamespace
 import pytest
 
 from couchbase_lm_cache import CouchbaseKVStore, CouchbaseLMCacheConfig
-from couchbase_lm_cache.connector import CouchbaseConnector
+from couchbase_lm_cache.connector import _HAS_LMCACHE, CouchbaseConnector
+
+if _HAS_LMCACHE:
+    import torch
+    from lmcache.v1.config import LMCacheEngineConfig
+    from lmcache.v1.metadata import LMCacheMetadata
 
 
 class _Key:
@@ -27,8 +32,23 @@ class _MemoryObj:
 
 
 class _LocalCPUBackend:
-    config = SimpleNamespace(extra_config={})
-    metadata = object()
+    if _HAS_LMCACHE:
+        config = LMCacheEngineConfig.from_defaults(
+            chunk_size=1, extra_config={"save_chunk_meta": False}
+        )
+        metadata = LMCacheMetadata(
+            model_name="live-test",
+            world_size=1,
+            local_world_size=1,
+            worker_id=0,
+            local_worker_id=0,
+            kv_dtype=torch.float16,
+            kv_shape=(1, 2, 1, 1, 4),
+            chunk_size=1,
+        )
+    else:
+        config = SimpleNamespace(extra_config={})
+        metadata = object()
 
     def allocate(self, shapes, dtypes, fmt):
         del shapes, dtypes, fmt
@@ -75,9 +95,13 @@ async def _exercise_live_connector():
         config=SimpleNamespace(extra_config=extra_config),
         plugin_name="couchbase",
     )
+    # Raw byte payloads: tensor round trips are covered by
+    # test_lmcache_remote_backend.py with real LMCache objects.
+    connector.save_chunk_meta = False
     connector.meta_shapes = []
     connector.meta_dtypes = []
     connector.meta_fmt = None
+    connector.reshape_partial_chunk = lambda memory_obj, bytes_read: memory_obj
     key = _Key("pytest-live-connector")
     missing = _Key("pytest-live-connector-missing")
     payload = b"connector-live-roundtrip"
@@ -101,3 +125,24 @@ def test_live_couchbase_connector_roundtrip():
     _skip_unless_live_enabled()
 
     asyncio.run(_exercise_live_connector())
+
+
+@pytest.mark.live
+def test_live_couchbase_store_shards_payload_above_document_limit():
+    """A 25 MiB chunk exceeds Couchbase's 20 MiB item limit and must be sharded."""
+
+    _skip_unless_live_enabled()
+
+    store = CouchbaseKVStore(CouchbaseLMCacheConfig.from_env())
+    key = _Key("pytest-live-sharded")
+    payload = os.urandom(25 * 1024 * 1024)
+    try:
+        store.put_bytes(key, payload)
+        assert store.exists(key)
+        assert store.exists(_Key("pytest-live-sharded::shard::1"))
+        assert store.get_bytes(key) == payload
+        assert store.remove(key)
+        assert not store.exists(_Key("pytest-live-sharded::shard::0"))
+    finally:
+        store.remove(key)
+        store.close()

@@ -1,0 +1,72 @@
+# 2026-10-26T16:46:52Z  Couchbase Server 8.0.2 (docker), live tests enabled
+vllm 0.31.0 | lmcache 0.5.6 | couchbase-sdk 4.6.3 | couchbase-lm-cache 0.2.0
+============================= test session starts ==============================
+platform linux -- Python 3.12.3, pytest-9.1.1, pluggy-1.7.0 -- /opt/venv/bin/python
+rootdir: /opt/couchbase-lm-cache
+configfile: pyproject.toml
+plugins: anyio-4.15.1
+collecting ... collected 48 items
+
+tests/test_config.py::test_config_from_extra_config_prefers_plugin_specific_values PASSED [  2%]
+tests/test_config.py::test_config_supports_named_plugin_instances PASSED [  4%]
+tests/test_config.py::test_config_shard_size_defaults_and_overrides PASSED [  6%]
+tests/test_config.py::test_config_requires_connection_settings PASSED    [  8%]
+tests/test_connector.py::test_connector_put_get_exists PASSED            [ 10%]
+tests/test_connector.py::test_connector_batched_put_and_get PASSED       [ 12%]
+tests/test_connector.py::test_batched_get_non_blocking_returns_only_consecutive_prefix PASSED [ 14%]
+tests/test_connector.py::test_get_returns_none_when_allocation_fails PASSED [ 16%]
+tests/test_connector.py::test_get_rejects_and_releases_oversized_payload PASSED [ 18%]
+tests/test_connector.py::test_remove_sync_and_ping PASSED                [ 20%]
+tests/test_connector.py::test_plugin_name_inferred_from_single_configured_plugin PASSED [ 22%]
+tests/test_l2_adapter.py::test_document_key_matches_lmcache_adapter_convention PASSED [ 25%]
+tests/test_l2_adapter.py::test_registry_creates_couchbase_adapter[memory] PASSED [ 27%]
+tests/test_l2_adapter.py::test_registry_creates_couchbase_adapter[couchbase] PASSED [ 29%]
+tests/test_l2_adapter.py::test_store_lookup_and_load_roundtrip[memory] PASSED [ 31%]
+tests/test_l2_adapter.py::test_store_lookup_and_load_roundtrip[couchbase] PASSED [ 33%]
+tests/test_l2_adapter.py::test_store_skips_existing_objects[memory] PASSED [ 35%]
+tests/test_l2_adapter.py::test_store_skips_existing_objects[couchbase] PASSED [ 37%]
+tests/test_l2_adapter.py::test_load_rejects_size_mismatch[memory] PASSED [ 39%]
+tests/test_l2_adapter.py::test_load_rejects_size_mismatch[couchbase] PASSED [ 41%]
+tests/test_l2_adapter.py::test_large_object_is_sharded_and_restored[memory] PASSED [ 43%]
+tests/test_l2_adapter.py::test_large_object_is_sharded_and_restored[couchbase] PASSED [ 45%]
+tests/test_l2_adapter.py::test_two_adapters_share_objects[memory] PASSED [ 47%]
+tests/test_l2_adapter.py::test_two_adapters_share_objects[couchbase] PASSED [ 50%]
+tests/test_live_couchbase.py::test_live_couchbase_store_roundtrip PASSED [ 52%]
+tests/test_live_couchbase.py::test_live_couchbase_connector_roundtrip PASSED [ 54%]
+tests/test_live_couchbase.py::test_live_couchbase_store_shards_payload_above_document_limit PASSED [ 56%]
+tests/test_lmcache_remote_backend.py::test_lmcache_loads_couchbase_plugin[memory] PASSED [ 58%]
+tests/test_lmcache_remote_backend.py::test_lmcache_loads_couchbase_plugin[couchbase] PASSED [ 60%]
+tests/test_lmcache_remote_backend.py::test_full_chunk_roundtrip_preserves_tensor[memory] PASSED [ 62%]
+tests/test_lmcache_remote_backend.py::test_full_chunk_roundtrip_preserves_tensor[couchbase] PASSED [ 64%]
+tests/test_lmcache_remote_backend.py::test_partial_chunk_roundtrip_uses_stored_shape[memory] PASSED [ 66%]
+tests/test_lmcache_remote_backend.py::test_partial_chunk_roundtrip_uses_stored_shape[couchbase] PASSED [ 68%]
+tests/test_lmcache_remote_backend.py::test_raw_mode_without_chunk_metadata[memory] PASSED [ 70%]
+tests/test_lmcache_remote_backend.py::test_raw_mode_without_chunk_metadata[couchbase] PASSED [ 72%]
+tests/test_lmcache_remote_backend.py::test_batched_put_get_and_prefix_contains[memory] PASSED [ 75%]
+tests/test_lmcache_remote_backend.py::test_batched_put_get_and_prefix_contains[couchbase] PASSED [ 77%]
+tests/test_lmcache_remote_backend.py::test_two_backends_share_chunks_through_store[memory] PASSED [ 79%]
+tests/test_lmcache_remote_backend.py::test_two_backends_share_chunks_through_store[couchbase] PASSED [ 81%]
+tests/test_store.py::test_store_binary_roundtrip_with_fake_collection PASSED [ 83%]
+tests/test_store.py::test_store_applies_ttl_only_when_positive PASSED    [ 85%]
+tests/test_store.py::test_store_shards_payloads_above_shard_size PASSED  [ 87%]
+tests/test_store.py::test_store_payload_at_shard_size_is_not_sharded PASSED [ 89%]
+tests/test_store.py::test_store_treats_missing_shard_as_miss PASSED      [ 91%]
+tests/test_store.py::test_store_rejects_invalid_shard_size[0] PASSED     [ 93%]
+tests/test_store.py::test_store_rejects_invalid_shard_size[20971521] PASSED [ 95%]
+tests/test_store.py::test_store_ping_reports_kv_endpoint_health PASSED   [ 97%]
+tests/test_store.py::test_store_remove_measured_reports_payload_size PASSED [100%]
+
+=============================== warnings summary ===============================
+../venv/lib/python3.12/site-packages/opentelemetry/sdk/_logs/_internal/__init__.py:531: 78 warnings
+tests/test_l2_adapter.py: 30 warnings
+tests/test_lmcache_remote_backend.py: 17 warnings
+  /opt/venv/lib/python3.12/site-packages/opentelemetry/sdk/_logs/_internal/__init__.py:531: DeprecationWarning: `LoggingHandler` in `opentelemetry-sdk` is deprecated. Use the handler from `opentelemetry-instrumentation-logging` instead.
+    warnings.warn(
+
+tests/test_l2_adapter.py::test_registry_creates_couchbase_adapter[memory]
+  /opt/venv/lib/python3.12/site-packages/google/auth/transport/grpc.py:43: FutureWarning: grpcio < 1.83.0 does not support Post-Quantum Cryptography (PQC). Support for non-PQC environments is deprecated. In April 2027, google-auth will raise its minimum requirements to enforce grpcio >= 1.83.0. For more details on Google Cloud's post-quantum security migration, visit: https://cloud.google.com/security/resources/post-quantum-cryptography
+    warnings.warn(
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+---------------- generated xml file: /evidence/pytest-live.xml -----------------
+======================= 48 passed, 126 warnings in 5.28s =======================
