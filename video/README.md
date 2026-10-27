@@ -1,6 +1,6 @@
 # Explainer video
 
-Remotion project for a ~5:10 narrated explainer of the Couchbase KV-cache tier for vLLM +
+Remotion project for a ~5:20 narrated explainer of the Couchbase KV-cache tier for vLLM +
 LMCache, aimed at developers new to LLM inference: an intro (what an LLM call
 does), the KV-cache memory problem (prefill, why a 10k-token prompt needs 1.5
 GB, why GPU memory loses it), where it hurts (many questions about one long
@@ -37,7 +37,13 @@ npx remotion render Explainer out/couchbase-lmcache-explainer.mp4
   ```bash
   GEMINI_API_KEY=... python3 scripts/tts.py --engine gemini --takes 5
   python3 scripts/pick_voice.py      # needs: pip install torch resemblyzer webrtcvad-wheels
+  python3 scripts/cues.py           # word timings, for animations keyed to a word
   ```
+
+  Lines that continue one sentence are always taken from the same take. Cuts
+  are placed in the quietest stretch between two lines, so quiet word endings
+  are kept. `cue(scene, line, ["minimax"])` in `src/explainer/timeline.ts`
+  returns the frame at which a line says a word, from `src/explainer/vo-words.json`.
 
   `tts.py` transcribes each take with Whisper, aligns it to the script and cuts
   it into lines; candidates go to `public/vo/takes/` (not committed) and the

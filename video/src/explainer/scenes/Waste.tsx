@@ -1,7 +1,7 @@
 import React from "react";
 import { useCurrentFrame, useVideoConfig } from "remotion";
 import { Box, Em, Explain, SceneBackground, SceneTitle, progress } from "../components";
-import { sceneBeats } from "../timeline";
+import { cue, sceneBeats } from "../timeline";
 import { colors, run } from "../theme";
 
 const BAR_X = 140;
@@ -22,7 +22,7 @@ export const Waste: React.FC = () => {
   const bar = progress(frame, beats[0].start, beats[0].start + 0.8 * fps);
   const docs = progress(frame, beats[1].start - 0.6 * fps, beats[1].start);
   const room = progress(frame, beats[1].start, beats[1].start + 18);
-  const reasonAt = [beats[2].start + 1.2 * fps, beats[3].start, beats[4].start];
+  const reasonAt = [cue("Waste", 2, ["other"], 1.2), beats[3].start, beats[4].start];
   const weightsW = px(run.weightsGB);
   const kvW = px(run.kvSpaceGB);
 

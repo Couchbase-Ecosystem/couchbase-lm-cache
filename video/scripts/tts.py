@@ -43,6 +43,8 @@ import urllib.error
 import urllib.request
 from pathlib import Path
 
+import numpy as np
+
 ROOT = Path(__file__).resolve().parent.parent
 NARRATION = ROOT / "src" / "explainer" / "narration.json"
 DURATIONS = ROOT / "src" / "explainer" / "vo-durations.json"
@@ -62,9 +64,11 @@ Style: friendly developer advocate, calm, warm and conversational. One narrator 
 #### TRANSCRIPT
 {text}"""
 
+# Trim only true silence and keep 120 ms of it, so quiet word edges (a final
+# "s", a soft "f") are never cut.
 EDGE_TRIM = (
-    "silenceremove=start_periods=1:start_threshold=-45dB:start_silence=0.03,areverse,"
-    "silenceremove=start_periods=1:start_threshold=-45dB:start_silence=0.03,areverse,"
+    "silenceremove=start_periods=1:start_threshold=-55dB:start_silence=0.12,areverse,"
+    "silenceremove=start_periods=1:start_threshold=-55dB:start_silence=0.12,areverse,"
     "afade=t=in:d=0.01,areverse,afade=t=in:d=0.02,areverse"
 )
 
@@ -213,7 +217,7 @@ def silences(take: Path) -> list[tuple[float, float]]:
             "-i",
             str(take),
             "-af",
-            "silencedetect=noise=-40dB:d=0.12",
+            "silencedetect=noise=-50dB:d=0.12",
             "-f",
             "null",
             "-",
@@ -225,8 +229,51 @@ def silences(take: Path) -> list[tuple[float, float]]:
     return list(zip(marks[0::2], marks[1::2]))
 
 
+def energy(take: Path) -> np.ndarray:
+    """Loudness in dB per 10 ms frame (30 ms window) across the take."""
+
+    raw = subprocess.run(
+        ["ffmpeg", "-loglevel", "error", "-i", str(take), "-ac", "1", "-ar", "16000",
+         "-f", "s16le", "-"],
+        check=True,
+        capture_output=True,
+    ).stdout
+    x = np.frombuffer(raw, np.int16).astype(np.float64) / 32768
+    hop, win = 160, 480
+    frames = np.lib.stride_tricks.sliding_window_view(x, win)[::hop]
+    return 20 * np.log10(np.sqrt((frames**2).mean(axis=1)) + 1e-9)
+
+
+def quietest(db: np.ndarray, lo: float, hi: float) -> float:
+    """Middle of the quietest stretch between lo and hi seconds.
+
+    Silence detection alone can mistake a soft final "s" for a pause; the
+    quietest stretch is the real pause between two lines.
+    """
+
+    a, b = max(0, int(lo * 100)), min(len(db), int(hi * 100) + 1)
+    if b - a < 3:
+        return (lo + hi) / 2
+    window = db[a:b]
+    quiet = window <= window.min() + 3
+    best, run, start = (0, 0), 0, 0
+    for i, q in enumerate(quiet):
+        if q:
+            if run == 0:
+                start = i
+            run += 1
+            if run > best[1] - best[0]:
+                best = (start, i + 1)
+        else:
+            run = 0
+    return (a + (best[0] + best[1]) / 2) / 100
+
+
 def cut_points(
-    texts: list[str], words: list[dict], gaps: list[tuple[float, float]]
+    texts: list[str],
+    words: list[dict],
+    gaps: list[tuple[float, float]],
+    db: np.ndarray,
 ) -> list[float]:
     """Return the time where each line after the first starts in the take."""
 
@@ -279,15 +326,20 @@ def cut_points(
             words[min(matched[line + unmatched])],
         )
         lo, hi = last["end"] - 0.05, first["start"] + 0.05
+        # Whisper's word edges absorb pauses: widen the search for the quiet
+        # stretch into both boundary words.
+        quiet_lo = max(last["start"], last["end"] - 0.3)
+        quiet_hi = max(hi, min(first["end"], first["start"] + 0.8))
         candidates = sorted(
             (g for g in gaps if g[1] > lo and g[0] < hi),
             key=lambda g: g[1] - g[0],
             reverse=True,
         )
         needed = unmatched + 1
-        if not unmatched and not candidates:
-            # The narrator ran two lines together: cut between the two words.
-            cuts.append((last["end"] + first["start"]) / 2)
+        if not unmatched:
+            # Cut in the quietest stretch between the two lines (or between the
+            # two words, if the narrator ran them together).
+            cuts.append(quietest(db, quiet_lo, quiet_hi))
             line += 1
             continue
         if len(candidates) < needed:
@@ -446,7 +498,7 @@ def gemini_take(
 
     with tempfile.TemporaryDirectory() as workdir:
         words = transcribe(take, Path(workdir))
-    cuts = cut_points(texts, words, silences(take))
+    cuts = cut_points(texts, words, silences(take), energy(take))
     bounds = list(zip([0.0] + cuts, cuts + [duration_seconds(take)]))
     ratios = check(texts, words, bounds)
     return [(start, end, ratio) for (start, end), ratio in zip(bounds, ratios)]

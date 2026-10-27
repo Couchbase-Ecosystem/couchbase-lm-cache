@@ -22,7 +22,7 @@
     "text": "The model reads all of it,"
    },
    {
-    "gap": 0.15,
+    "gap": 0.0,
     "text": "and then writes the answer, one word at a time."
    }
   ]
@@ -37,11 +37,11 @@
     "text": "We'll cover the problem,"
    },
    {
-    "gap": 0.1,
+    "gap": 0.0,
     "text": "the solution,"
    },
    {
-    "gap": 0.1,
+    "gap": 0.0,
     "text": "and a real demo."
    }
   ]
@@ -140,18 +140,18 @@
     "text": "Back in our demo, on a twenty-four gigabyte GPU, the model itself takes fifteen,"
    },
    {
-    "gap": 0.15,
+    "gap": 0.0,
     "text": "leaving room for just two contexts like ours."
    },
    {
     "text": "So the cache gets thrown away when other sessions need the space,"
    },
    {
-    "gap": 0.15,
+    "gap": 0.0,
     "text": "when the next turn goes to another server,"
    },
    {
-    "gap": 0.15,
+    "gap": 0.0,
     "text": "or when the server restarts."
    },
    {
@@ -183,11 +183,11 @@
     "text": "That's why the big A I providers already cache prompts in their own APIs,"
    },
    {
-    "gap": 0.1,
+    "gap": 0.0,
     "text": "like Open A I,"
    },
    {
-    "gap": 0.1,
+    "gap": 0.0,
     "text": "and Anthropic."
    },
    {
@@ -257,7 +257,7 @@
     "text": "Server B loads them, instead of reading the whole context again,"
    },
    {
-    "gap": 0.15,
+    "gap": 0.0,
     "text": "and only reads the last few tokens before it starts answering."
    }
   ]
@@ -285,7 +285,7 @@
     "text": "Couchbase has none of the chunks yet, so the GPU reads everything,"
    },
    {
-    "gap": 0.15,
+    "gap": 0.0,
     "text": "and L M Cache saves them to Couchbase as it goes."
    },
    {
@@ -300,7 +300,7 @@
     "text": "Server B gets the same context, and finds all forty chunks,"
    },
    {
-    "gap": 0.15,
+    "gap": 0.0,
     "text": "so it loads them, instead of computing."
    },
    {
@@ -316,7 +316,7 @@
     "text": "In the Couchbase console, each chunk has a small manifest,"
    },
    {
-    "gap": 0.15,
+    "gap": 0.0,
     "text": "and its one megabyte shards."
    },
    {
@@ -335,11 +335,11 @@
     "text": "The cache is shared by every server,"
    },
    {
-    "gap": 0.1,
+    "gap": 0.0,
     "text": "survives evictions and restarts,"
    },
    {
-    "gap": 0.1,
+    "gap": 0.0,
     "text": "and saves the GPU from repeating work on every turn."
    },
    {

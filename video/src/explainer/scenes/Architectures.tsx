@@ -3,7 +3,7 @@ import { useCurrentFrame } from "remotion";
 import { Explain, SceneBackground, SceneTitle, progress } from "../components";
 import { architectures } from "../models";
 import { colors } from "../theme";
-import { sceneBeats } from "../timeline";
+import { cue, sceneBeats } from "../timeline";
 
 const BAR_X = 760;
 const BAR_MAX = 700;
@@ -13,7 +13,13 @@ export const Architectures: React.FC = () => {
   const frame = useCurrentFrame();
   const beats = sceneBeats("Architectures");
   // Rows appear as the narration names them.
-  const rowAt = [beats[1].start, beats[1].start + 45, beats[2].start, beats[3].start, beats[3].start + 60];
+  const rowAt = [
+    cue("Architectures", 1, ["our", "demo"]),
+    cue("Architectures", 1, ["minimax", "mini"], 4),
+    cue("Architectures", 2, ["glm"]),
+    cue("Architectures", 3, ["kwen", "quen", "qwen", "qen", "64", "sixty"], 3.5),
+    cue("Architectures", 3, ["kimi", "kemi", "kimmy"], 6),
+  ];
   const max = architectures[0].kb;
   return (
     <SceneBackground>

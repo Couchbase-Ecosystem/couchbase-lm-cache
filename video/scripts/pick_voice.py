@@ -26,6 +26,7 @@ ROOT = Path(__file__).resolve().parent.parent
 TAKES = ROOT / "public" / "vo" / "takes"
 OUT = ROOT / "public" / "vo"
 DURATIONS = ROOT / "src" / "explainer" / "vo-durations.json"
+NARRATION = ROOT / "src" / "explainer" / "narration.json"
 MIN_MATCH = 0.6  # transcript similarity; numbers spelled out lower it, so keep it loose
 LONG_CLIP = 2.5  # seconds; shorter clips give noisier voice embeddings
 
@@ -52,6 +53,26 @@ def load(path: Path) -> np.ndarray:
     return np.frombuffer(raw, np.float32)
 
 
+def sentences(lines: list[str]) -> list[list[str]]:
+    """Group consecutive lines of a scene that belong to one sentence."""
+
+    narration = json.loads(NARRATION.read_text())
+    text = {
+        f"{scene}-{i}": segment["text"]
+        for scene, spec in narration.items()
+        for i, segment in enumerate(spec["segments"])
+    }
+    groups: list[list[str]] = []
+    for line in lines:
+        previous = groups[-1][-1] if groups else None
+        same_scene = previous and previous.rsplit("-", 1)[0] == line.rsplit("-", 1)[0]
+        if same_scene and not text[previous].rstrip().endswith((".", "?", "!")):
+            groups[-1].append(line)
+        else:
+            groups.append([line])
+    return groups
+
+
 def main() -> None:
     candidates = json.loads((TAKES / "candidates.json").read_text())
     encoder = VoiceEncoder("cpu", verbose=False)
@@ -74,19 +95,34 @@ def main() -> None:
         reference = pool[similarity >= np.percentile(similarity, 30)].mean(axis=0)
     reference /= np.linalg.norm(reference)
 
-    chosen, report = {}, {}
-    for line, clips in candidates.items():
+    # Lines that continue one sentence ("We'll cover the problem," / "the
+    # solution,") come from the same take, so a sentence is never stitched from
+    # different recordings.
+    for clips in candidates.values():
         for clip in clips:
             clip["voice"] = float(clip["embedding"] @ reference)
-        usable = [c for c in clips if c["match"] >= MIN_MATCH] or clips
-        best = max(usable, key=lambda c: c["voice"])
-        chosen[line] = best
-        report[line] = {
-            "take": best["take"],
-            "voice": round(best["voice"], 3),
-            "seconds": best["seconds"],
-            "all": [(c["take"], round(c["voice"], 3), c["match"]) for c in clips],
-        }
+    chosen, report = {}, {}
+    for group in sentences(list(candidates)):
+        takes = sorted({c["take"] for c in candidates[group[0]]})
+
+        def score(take: int, group: list[str] = group) -> tuple[bool, float]:
+            clips = [next(c for c in candidates[line] if c["take"] == take) for line in group]
+            return (
+                all(c["match"] >= MIN_MATCH for c in clips),
+                float(np.mean([c["voice"] for c in clips])),
+            )
+
+        best_take = max(takes, key=score)
+        for line in group:
+            best = next(c for c in candidates[line] if c["take"] == best_take)
+            chosen[line] = best
+            report[line] = {
+                "take": best_take,
+                "voice": round(best["voice"], 3),
+                "seconds": best["seconds"],
+                "sentence": group,
+                "all": [(c["take"], round(c["voice"], 3), c["match"]) for c in candidates[line]],
+            }
 
     long_scores = [c["voice"] for c in chosen.values() if c["seconds"] >= LONG_CLIP]
     floor = float(np.median(long_scores)) - 0.04

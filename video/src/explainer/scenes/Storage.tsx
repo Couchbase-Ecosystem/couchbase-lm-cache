@@ -1,7 +1,7 @@
 import React from "react";
 import { useCurrentFrame, useVideoConfig } from "remotion";
 import { Box, Em, Explain, SceneBackground, SceneTitle, progress } from "../components";
-import { sceneBeats } from "../timeline";
+import { cue, sceneBeats } from "../timeline";
 import { colors, mono, run } from "../theme";
 
 /** How one prompt's KV cache becomes 1,480 Couchbase documents. */
@@ -9,7 +9,8 @@ export const Storage: React.FC = () => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
   const beats = sceneBeats("Storage");
-  const split = progress(frame, beats[0].start + 1.5 * fps, beats[0].start + 2.7 * fps); // KV cache → 40 chunks
+  const splitAt = cue("Storage", 0, ["splits"], 1.5);
+  const split = progress(frame, splitAt, splitAt + 1.2 * fps); // KV cache → 40 chunks
   const focus = progress(frame, beats[1].start - 6, beats[1].start + 18); // zoom on one chunk
   const shards = progress(frame, beats[2].start, beats[2].start + 1.6 * fps); // chunk → 36 × 1 MB + manifest
   const total = progress(frame, beats[3].start, beats[3].start + 24);
@@ -43,7 +44,7 @@ export const Storage: React.FC = () => {
           top: 446,
           fontSize: 40,
           fontWeight: 700,
-          opacity: progress(frame, beats[0].start + 2.5 * fps, beats[0].start + 3.1 * fps),
+          opacity: progress(frame, splitAt + 0.9 * fps, splitAt + 1.5 * fps),
         }}
       >
         LMCache splits it into <Em color={colors.blue}>{run.chunks} chunks</Em> of {run.chunkTokens} tokens

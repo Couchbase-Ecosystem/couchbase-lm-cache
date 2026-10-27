@@ -3,7 +3,7 @@ import { useCurrentFrame } from "remotion";
 import { Em, Explain, SceneBackground, SceneTitle, progress } from "../components";
 import { fullContext } from "../models";
 import { colors } from "../theme";
-import { sceneBeats } from "../timeline";
+import { cue, sceneBeats } from "../timeline";
 
 const BAR_X = 640;
 const BAR_MAX = 1000;
@@ -14,8 +14,15 @@ const GPU_GB = 80;
 export const ContextGrowth: React.FC = () => {
   const frame = useCurrentFrame();
   const beats = sceneBeats("ContextGrowth");
-  const rowAt = [beats[1].start, beats[2].start, beats[3].start, beats[3].start + 75, beats[4].start];
-  const gpu = progress(frame, beats[4].start + 30, beats[4].start + 50);
+  const rowAt = [
+    beats[1].start,
+    cue("ContextGrowth", 2, ["kwen", "quen", "qwen", "qen", "newer"]),
+    cue("ContextGrowth", 3, ["kimi", "kemi", "kimmy"], 1.5),
+    cue("ContextGrowth", 3, ["glm"], 3.5),
+    cue("ContextGrowth", 4, ["minimax", "mini"]),
+  ];
+  const gpuAt = cue("ContextGrowth", 4, ["entire", "80", "eighty"], 3);
+  const gpu = progress(frame, gpuAt - 6, gpuAt + 14);
   const px = (gb: number) => (gb / SCALE_GB) * BAR_MAX;
   return (
     <SceneBackground>
