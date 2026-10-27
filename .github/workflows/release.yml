@@ -1,0 +1,135 @@
+name: Release
+
+# Pushing a tag like v0.3.0 builds, tests and publishes to PyPI, then creates the
+# GitHub release. Running the workflow by hand publishes to TestPyPI instead.
+# Both use PyPI Trusted Publishing, so no API token is stored in the repository.
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    outputs:
+      prerelease: ${{ steps.notes.outputs.prerelease }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python -m pip install -e '.[dev]'
+      - name: Check the tag matches __version__
+        if: startsWith(github.ref, 'refs/tags/')
+        run: |
+          version=$(python -c "import couchbase_lm_cache; print(couchbase_lm_cache.__version__)")
+          if [ "v$version" != "$GITHUB_REF_NAME" ]; then
+            echo "::error::Tag $GITHUB_REF_NAME does not match __version__ $version"
+            exit 1
+          fi
+      # Pre-releases (0.3.0rc1, 0.3.0b1, ...) use their own changelog section if
+      # there is one, otherwise [Unreleased]. Final releases need their own.
+      - name: Extract the changelog entry
+        id: notes
+        if: startsWith(github.ref, 'refs/tags/')
+        run: |
+          version="${GITHUB_REF_NAME#v}"
+          section() {
+            awk -v h="## [$1]" '
+              index($0, h) == 1 { found = 1; next }
+              found && /^## \[/ { exit }
+              found && !/^\[[^]]+\]: / { print }
+            ' CHANGELOG.md
+          }
+          case "$version" in
+            *a[0-9]*|*b[0-9]*|*rc[0-9]*|*.dev[0-9]*) prerelease=true ;;
+            *) prerelease=false ;;
+          esac
+          section "$version" > notes.md
+          if [ "$prerelease" = true ] && ! grep -q '[^[:space:]]' notes.md; then
+            section Unreleased > notes.md
+          fi
+          if ! grep -q '[^[:space:]]' notes.md; then
+            echo "::error::No CHANGELOG.md entry for $version"
+            exit 1
+          fi
+          echo "prerelease=$prerelease" >> "$GITHUB_OUTPUT"
+      - run: ruff check .
+      - run: pytest
+      - run: python -m build && twine check dist/*
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+      - uses: actions/upload-artifact@v4
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          name: notes
+          path: notes.md
+
+  publish-testpypi:
+    # Forks have no trusted publisher; skip rather than fail at upload.
+    if: >-
+      github.repository == 'Couchbase-Ecosystem/couchbase-lm-cache' &&
+      github.event_name == 'workflow_dispatch'
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: testpypi
+      url: https://test.pypi.org/p/couchbase-lm-cache
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+      - uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          repository-url: https://test.pypi.org/legacy/
+          skip-existing: true
+
+  publish-pypi:
+    # A manual run on a tag also has a refs/tags/ ref; keep those TestPyPI-only.
+    if: >-
+      github.repository == 'Couchbase-Ecosystem/couchbase-lm-cache' &&
+      github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/p/couchbase-lm-cache
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+      - uses: pypa/gh-action-pypi-publish@release/v1
+
+  github-release:
+    needs: [build, publish-pypi]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+      - uses: actions/download-artifact@v4
+        with:
+          name: notes
+      - name: Create the GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PRERELEASE: ${{ needs.build.outputs.prerelease }}
+        run: |
+          flags=()
+          if [ "$PRERELEASE" = true ]; then flags+=(--prerelease); fi
+          gh release create "$GITHUB_REF_NAME" dist/* "${flags[@]}" \
+            --repo "$GITHUB_REPOSITORY" \
+            --title "couchbase-lm-cache ${GITHUB_REF_NAME#v}" \
+            --notes-file notes.md

@@ -112,10 +112,20 @@ variables. The password is never logged by the helper's `redacted()` method.
 The version lives in `src/couchbase_lm_cache/__init__.py` (`__version__`);
 `pyproject.toml` reads it from there.
 
-1. Update `__version__` and add the release to `CHANGELOG.md`.
+Releases are published by `.github/workflows/release.yml` through PyPI
+Trusted Publishing, so no API token is stored in GitHub.
+
+1. Update `__version__` and add the release to `CHANGELOG.md` under a
+   `## [X.Y.Z] - YYYY-MM-DD` heading (the workflow uses it as the release notes).
+   For a pre-release, use the PEP 440 form in both `__version__` and the tag
+   (`0.3.0rc1`, tag `v0.3.0rc1`, not `v0.3.0-rc.1`). Its notes come from a
+   `## [0.3.0rc1]` section if there is one, otherwise from `## [Unreleased]`, and
+   the GitHub release is marked as a pre-release. PyPI accepts it like any
+   release, but `pip install` only picks it up with `--pre` or an exact
+   `==0.3.0rc1` pin.
 2. Check: `ruff check .`, `pytest`, and the live suite in the LMCache image
    (see the README's Development section).
-3. Build and check the distributions:
+3. Optionally build and check the distributions locally:
 
    ```bash
    rm -rf dist && python -m build && twine check dist/*
@@ -124,23 +134,30 @@ The version lives in `src/couchbase_lm_cache/__init__.py` (`__version__`);
    The sdist only contains the package, tests, docs and `examples/store_smoke.py`
    (see `[tool.hatch.build.targets.sdist]`); the demo, Docker stack and video
    stay in the repository.
-4. Upload to PyPI with an API token for the `couchbase-lm-cache` project,
-   configured in `~/.pypirc` or passed as `TWINE_USERNAME=__token__` /
-   `TWINE_PASSWORD`:
+4. Optionally dry-run the upload to TestPyPI: run the Release workflow by hand
+   (Actions → Release → Run workflow).
+5. Merge to the default branch, then tag the commit and push the tag:
 
    ```bash
-   twine upload dist/*
+   git tag -a v0.3.0 -m "couchbase-lm-cache 0.3.0" && git push origin v0.3.0
    ```
 
-5. Tag the commit and publish a GitHub release with the changelog entry:
-
-   ```bash
-   git tag -a v0.2.0 -m "couchbase-lm-cache 0.2.0" && git push origin v0.2.0
-   gh release create v0.2.0 dist/* --title "couchbase-lm-cache 0.2.0" --notes-file <notes>
-   ```
-
+   The workflow checks the tag matches `__version__`, runs ruff and pytest,
+   builds, publishes to PyPI, and creates the GitHub release with the
+   distributions and the changelog entry.
 6. If LMCache maintainers want Couchbase listed in LMCache, open an upstream PR
    adding a docs page that points to this package.
+
+### One-time setup
+
+- On PyPI, open the `couchbase-lm-cache` project → Publishing → add a trusted
+  publisher: owner `Couchbase-Ecosystem`, repository `couchbase-lm-cache`,
+  workflow `release.yml`, environment `pypi`. If the project does not exist yet,
+  add it as a pending publisher from your account's Publishing page.
+- Do the same on TestPyPI with environment `testpypi`.
+- In the GitHub repository settings, create the `pypi` and `testpypi`
+  environments. Adding required reviewers to `pypi` makes each release wait for
+  an approval before uploading.
 
 ## Storage format
 
