@@ -593,3 +593,6 @@ release process. Changes are listed in [CHANGELOG.md](https://github.com/Couchba
 ## License
 
 Apache License 2.0. See [LICENSE](https://github.com/Couchbase-Ecosystem/couchbase-lm-cache/blob/HEAD/LICENSE).
+
+## Support
+This project is community-supported
