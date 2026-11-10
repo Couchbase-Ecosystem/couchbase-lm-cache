@@ -12,11 +12,65 @@ jobs:
       matrix:
         python-version: ["3.10", "3.11", "3.12", "3.13", "3.14"]
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
         with:
           python-version: ${{ matrix.python-version }}
       - run: python -m pip install -e '.[dev]'
       - run: ruff check .
       - run: pytest
       - run: python -m build && twine check dist/*
+
+  # Runs every test, including the live and LMCache-backed ones that the matrix
+  # skips, against a throwaway Couchbase Server with LMCache 0.5.6 on CPU torch.
+  live:
+    name: live Couchbase + LMCache
+    runs-on: ubuntu-latest
+    env:
+      CB_IMAGE: couchbase:enterprise-8.0.1
+      CB_ADMIN_PASSWORD: ci-password-not-secret
+      LMCACHE_COUCHBASE_CONNSTR: couchbase://127.0.0.1
+      LMCACHE_COUCHBASE_USERNAME: Administrator
+      LMCACHE_COUCHBASE_PASSWORD: ci-password-not-secret
+      LMCACHE_COUCHBASE_BUCKET: lmcache
+      LMCACHE_COUCHBASE_SCOPE: ci
+      LMCACHE_COUCHBASE_COLLECTION: kvchunks
+      LMCACHE_COUCHBASE_LIVE_TESTS: "1"
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+      - name: Start Couchbase Server
+        run: |
+          docker run -d --name couchbase \
+            -p 8091-8096:8091-8096 -p 11210:11210 "$CB_IMAGE"
+          for _ in $(seq 1 60); do
+            curl -sf http://127.0.0.1:8091/ui/index.html >/dev/null && break
+            sleep 2
+          done
+          cli() { docker exec couchbase couchbase-cli "$1" -c 127.0.0.1 "${@:2}"; }
+          cli cluster-init --cluster-username Administrator \
+            --cluster-password "$CB_ADMIN_PASSWORD" \
+            --services data --cluster-ramsize 512
+          auth=(-u Administrator -p "$CB_ADMIN_PASSWORD")
+          cli bucket-create "${auth[@]}" --bucket "$LMCACHE_COUCHBASE_BUCKET" \
+            --bucket-type couchbase --bucket-ramsize 256 --wait
+          cli collection-manage "${auth[@]}" --bucket "$LMCACHE_COUCHBASE_BUCKET" \
+            --create-scope "$LMCACHE_COUCHBASE_SCOPE"
+          cli collection-manage "${auth[@]}" --bucket "$LMCACHE_COUCHBASE_BUCKET" \
+            --create-collection \
+            "$LMCACHE_COUCHBASE_SCOPE.$LMCACHE_COUCHBASE_COLLECTION"
+          # Give the KV service a moment to publish the new collection manifest.
+          sleep 5
+      - name: Install with LMCache and CPU torch
+        run: |
+          python -m pip install -U pip
+          python -m pip install torch --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install -e '.[dev,lmcache]'
+      - run: pytest -v
+      - name: Store smoke test
+        run: python examples/store_smoke.py
+      - name: Couchbase logs on failure
+        if: failure()
+        run: docker logs couchbase | tail -200

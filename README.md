@@ -109,7 +109,7 @@ The package provides two plugins, one per LMCache architecture:
 
 | Component | Tested | Supported |
 | --- | --- | --- |
-| LMCache | 0.5.6 (`lmcache/vllm-openai:v0.5.6` image) | ≥ 0.5.6 (MP mode L2 adapter API) |
+| LMCache | 0.5.6 (`lmcache/vllm-openai:v0.5.6` image) | ≥ 0.5.6, < 0.5.7 (MP mode L2 adapter API; 0.5.7 is not supported yet) |
 | vLLM | 0.31.0 (bundled in the LMCache image) | 0.26+ with `LMCacheMPConnector` |
 | Couchbase Server | 8.0.2 Enterprise | 7.x or later; Capella |
 | Couchbase Python SDK | 4.6.3 | ≥ 4.6.3, < 5 |
@@ -123,7 +123,7 @@ Install the package in the same Python environment as the LMCache server:
 
 ```bash
 pip install couchbase-lm-cache            # the connector (needs LMCache present)
-pip install 'couchbase-lm-cache[lmcache]' # also pulls in lmcache>=0.5.6
+pip install 'couchbase-lm-cache[lmcache]' # also pulls in lmcache>=0.5.6,<0.5.7
 ```
 
 On top of the official LMCache image, as in [`docker/Dockerfile`](https://github.com/Couchbase-Ecosystem/couchbase-lm-cache/blob/HEAD/docker/Dockerfile):
