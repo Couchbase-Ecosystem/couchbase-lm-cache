@@ -9,19 +9,19 @@
   },
   "private": true,
   "dependencies": {
-    "@remotion/cli": "4.0.539",
-    "@remotion/google-fonts": "4.0.539",
-    "@remotion/media": "4.0.539",
-    "@remotion/transitions": "4.0.539",
+    "@remotion/cli": "4.0.540",
+    "@remotion/google-fonts": "4.0.540",
+    "@remotion/media": "4.0.540",
+    "@remotion/transitions": "4.0.540",
     "react": "19.2.3",
     "react-dom": "19.2.3",
-    "remotion": "4.0.539"
+    "remotion": "4.0.540"
   },
   "devDependencies": {
-    "@remotion/eslint-config-flat": "4.0.539",
+    "@remotion/eslint-config-flat": "4.0.540",
     "@types/react": "19.2.7",
     "@types/web": "0.0.166",
-    "eslint": "10.12.0",
+    "eslint": "10.15.0",
     "prettier": "3.8.1",
     "typescript": "5.9.3"
   },
@@ -33,5 +33,8 @@
   },
   "allowScripts": {
     "esbuild": false
+  },
+  "overrides": {
+    "typescript-eslint": "8.73.0"
   }
 }
