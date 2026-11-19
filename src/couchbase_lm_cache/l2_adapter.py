@@ -37,8 +37,8 @@ from lmcache.v1.distributed.l2_adapters.config import L2AdapterConfigBase
 from lmcache.v1.memory_management import MemoryObj
 from lmcache.v1.platform import create_event_notifier
 
+from couchbase_lm_cache._buffers import byte_view
 from couchbase_lm_cache.config import CouchbaseLMCacheConfig
-from couchbase_lm_cache.connector import _byte_view
 from couchbase_lm_cache.store import CouchbaseKVStore
 
 logger = init_logger(__name__)
@@ -283,7 +283,7 @@ class CouchbaseL2Adapter(L2AdapterInterface):
         try:
             if self.store.exists(doc_key):
                 return 0
-            payload = _byte_view(memory_obj)
+            payload = byte_view(memory_obj)
             self.store.put_bytes(doc_key, payload)
             return len(payload)
         except Exception:
@@ -305,7 +305,7 @@ class CouchbaseL2Adapter(L2AdapterInterface):
             data = self.store.get_bytes(doc_key)
             if data is None:
                 return False
-            target = _byte_view(memory_obj)
+            target = byte_view(memory_obj)
             if len(data) != len(target):
                 logger.warning(
                     "Couchbase L2 object %s has %d bytes, expected %d",

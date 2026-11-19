@@ -9,6 +9,7 @@ import logging
 from concurrent.futures import ThreadPoolExecutor
 from typing import Any
 
+from couchbase_lm_cache._buffers import byte_view
 from couchbase_lm_cache.config import CouchbaseLMCacheConfig
 from couchbase_lm_cache.store import CouchbaseKVStore
 
@@ -39,16 +40,6 @@ except Exception:  # pragma: no cover - unit tests run without heavy LMCache dep
     init_logger = logging.getLogger
 
 logger = init_logger(__name__)
-
-
-def _byte_view(memory_obj: Any) -> memoryview:
-    """Return a flat unsigned-byte view over a ``MemoryObj`` buffer."""
-
-    buffer = memory_obj.byte_array
-    view = buffer if isinstance(buffer, memoryview) else memoryview(buffer)
-    if view.format != "B":
-        view = view.cast("B")
-    return view
 
 
 def _release(memory_obj: Any) -> None:
@@ -115,7 +106,7 @@ class CouchbaseConnector(RemoteConnector):
         return await self.loop.run_in_executor(self.executor, func, *args)
 
     def _encode(self, memory_obj: MemoryObj) -> bytes:
-        payload = _byte_view(memory_obj)
+        payload = byte_view(memory_obj)
         if not self.save_chunk_meta:
             return bytes(payload)
         header = RemoteMetadata(
@@ -153,7 +144,7 @@ class CouchbaseConnector(RemoteConnector):
             logger.warning("LMCache local CPU backend could not allocate MemoryObj")
             return None
         try:
-            target = _byte_view(memory_obj)
+            target = byte_view(memory_obj)
             if len(payload) > len(target):
                 raise ValueError(
                     f"Couchbase payload for {key} has {len(payload)} bytes but "
